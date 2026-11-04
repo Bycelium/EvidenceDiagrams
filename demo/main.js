@@ -81,6 +81,7 @@ const coneWrap = document.querySelector('.cone-wrap');
 const coneDescription = document.querySelector('#cone-description');
 const resultantLabel = document.querySelector('#resultant-label');
 const colorLegend = document.querySelector('#color-legend');
+const colorLegendSettings = document.querySelector('.color-legend-settings');
 const legendCanvas = document.querySelector('#legend-canvas');
 const legendContext = legendCanvas.getContext('2d', { alpha: true });
 const saturationThreshold = document.querySelector('#saturation-threshold');
@@ -148,8 +149,6 @@ function syncDiagramDetailsState() {
     i18n.t(diagramDetailsExpanded ? 'diagram.collapseDetails' : 'diagram.expandDetails'),
   );
   diagramDetailsToggle.classList.toggle('is-expanded', diagramDetailsExpanded);
-  coneWrap.classList.toggle('details-expanded', diagramDetailsExpanded);
-  coneWrap.closest('.result')?.classList.toggle('diagram-expanded', diagramDetailsExpanded);
 }
 
 function setDiagramDetailsExpanded(expanded) {
@@ -521,7 +520,10 @@ function resizeCanvas(element, contextLocal, width, height) {
 }
 
 function drawColorLegend() {
-  const width = Math.max(1, Math.min(260, Math.round(colorLegend.clientWidth - 32)));
+  const maximumWidth = window.matchMedia('(max-width: 1040px)').matches
+    ? window.matchMedia('(max-height: 620px)').matches ? 190 : 220
+    : 260;
+  const width = Math.max(1, Math.min(maximumWidth, Math.round(colorLegend.clientWidth - 32)));
   const height = Math.round(width * .66);
   resizeCanvas(legendCanvas, legendContext, width, height);
   const centerX = width / 2;
@@ -636,8 +638,12 @@ function createHistoryElement(item) {
     const y = step?.visibleRibbon?.y2 ?? breakItem?.y ?? 0;
     requestAnimationFrame(() => {
       const canvasBounds = canvas.getBoundingClientRect();
+      const pinnedLegendHeight = getComputedStyle(colorLegend).position === 'sticky'
+        ? colorLegend.getBoundingClientRect().height + 12
+        : 0;
+      const availableViewport = Math.max(1, window.innerHeight - pinnedLegendHeight);
       window.scrollTo({
-        top: Math.max(0, window.scrollY + canvasBounds.top + y - window.innerHeight / 3),
+        top: Math.max(0, window.scrollY + canvasBounds.top + y - pinnedLegendHeight - availableViewport / 3),
         behavior: 'smooth',
       });
     });
@@ -766,6 +772,7 @@ function update() {
     geometry = undefined;
     currentDiagram = undefined;
     colorLegend.hidden = true;
+    colorLegendSettings.hidden = true;
     renderHistory();
     document.querySelector('#dissonance').textContent = i18n.percent(invalidSummary.dissonance);
     probability.hidden = true;
@@ -825,6 +832,7 @@ function update() {
   visualization.hidden = false;
   colorSummary.hidden = false;
   colorLegend.hidden = false;
+  colorLegendSettings.hidden = false;
   latestColor = diagram.resultant.color;
   resultantLabel.style.color = latestColor;
   drawColorLegend();

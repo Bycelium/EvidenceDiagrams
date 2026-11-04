@@ -385,7 +385,8 @@ h2 {
 .result,
 .settings,
 .scenarios,
-.color-legend {
+.color-legend,
+.color-legend-settings {
   min-width: 0;
   border: 1px solid #d5dde7;
   border-radius: 16px;
@@ -394,15 +395,9 @@ h2 {
 }
 
 .result {
-  position: sticky;
-  z-index: 2;
-  top: .3rem;
-  padding: .7rem .85rem;
-}
-
-.result.diagram-expanded {
   position: relative;
-  top: auto;
+  z-index: 2;
+  padding: .7rem .85rem;
 }
 
 .settings-header,
@@ -1314,12 +1309,13 @@ tbody th {
 }
 
 .scenarios,
-.color-legend {
+.color-legend-settings {
   padding: 1rem 1.1rem;
 }
 
 .scenarios h2,
-.color-legend h2 {
+.color-legend h2,
+.color-legend-settings h2 {
   margin-bottom: .75rem;
   font-size: 1.05rem;
 }
@@ -1393,18 +1389,18 @@ tbody th {
   text-align: center;
 }
 
-.color-legend > p {
+.color-legend-settings > p {
   margin: .25rem 0 .6rem;
   color: #5b6b7d;
   font-size: .78rem;
 }
 
-.color-legend .color {
+.color-legend-settings .color {
   width: fit-content;
   margin: .55rem auto 0;
 }
 
-.color-legend .palette {
+.color-legend-settings .palette {
   margin-top: .8rem;
 }
 
@@ -1507,24 +1503,32 @@ tbody th {
   .workspace {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+    grid-template-rows: auto 1fr;
     align-items: start;
     gap: .8rem;
   }
 
   .main-column {
+    grid-column: 1;
+    grid-row: 1 / span 2;
     gap: .8rem;
   }
 
   .controls {
+    grid-column: 2;
+    grid-row: 2;
     display: grid;
     align-content: start;
     gap: .8rem;
     margin-top: 0;
   }
 
-  .color-legend { order: -1; }
+  .color-legend {
+    grid-column: 2;
+    grid-row: 1;
+  }
 
-  .color-legend .palette {
+  .color-legend-settings .palette {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1535,6 +1539,18 @@ tbody th {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .color-legend {
+    position: sticky;
+    z-index: 8;
+    top: .35rem;
+    margin-bottom: .65rem;
+    padding: .45rem .7rem;
+  }
+
+  .color-legend h2 {
+    margin-bottom: .2rem;
+    font-size: .9rem;
+  }
 }
 
 @media (max-width: 820px) {
@@ -1543,13 +1559,7 @@ tbody th {
     padding-top: 1rem;
   }
 
-  .workspace {
-    display: block;
-  }
-
   .result {
-    z-index: 2;
-    top: .35rem;
     margin-bottom: 0;
     padding: .75rem;
     box-shadow: 0 8px 22px rgb(38 52 69 / 10%);
@@ -1572,9 +1582,10 @@ tbody th {
   }
 
   .scenarios,
-  .color-legend {
+  .color-legend-settings {
     padding: .9rem;
   }
+
 }
 
 @media (max-width: 620px) {
@@ -1727,6 +1738,9 @@ tbody th {
       <p data-i18n="app.intro">Add evidence, adjust its illustrative weight, and explore combined weight, dissonance, and color.</p>
     </header>
     <div class="workspace">
+      <section id="color-legend" class="color-legend" aria-labelledby="color-legend-title"><h2 id="color-legend-title" data-i18n="palette.heading">Color legend</h2>
+        <canvas id="legend-canvas" role="img" data-i18n="palette.canvasFallback" data-i18n-aria-label="palette.canvasAria" aria-label="Color legend widening downward: uncertain gray spans the top according to the prior interval; opposing evidence is red at bottom left, dissonance is yellow at bottom center, and supporting evidence is green at bottom right. The point shows the current summary.">Color legend.</canvas>
+      </section>
       <div class="main-column">
         <section class="result" data-i18n-aria-label="diagram.label" aria-label="Weight of evidence trapezoid diagram">
           <div class="visual-summary"><p id="probability-description" class="visually-hidden"></p>
@@ -1756,7 +1770,7 @@ tbody th {
           <div class="settings-header"><h2 id="settings-title" data-i18n="evidence.heading">Evidence</h2><button type="button" id="reset" data-i18n="action.reset">Reset</button></div>
           <p class="illustrative-note"><span data-i18n="evidence.illustrative">Illustrative weights only; adjust them for the evidence and context.</span> <span data-i18n="evidence.independence">Several reports can repeat the same source. Check whether evidence is independent before combining its weight.</span></p>
           <section class="current-evidence" data-i18n-aria-label="evidence.editorLabel" aria-label="Evidence editor">
-            <div class="table-wrap"><table><thead><tr><th scope="col" data-i18n="evidence.category">Category</th><th scope="col" data-i18n="evidence.for">For</th><th scope="col" data-i18n="evidence.against">Against</th></tr></thead><tbody id="category-rows"></tbody></table></div>
+            <div class="table-wrap"><table><thead><tr><th scope="col" data-i18n="evidence.category">Category</th><th scope="col" data-i18n="evidence.for">Supports</th><th scope="col" data-i18n="evidence.against">Opposes</th></tr></thead><tbody id="category-rows"></tbody></table></div>
             <div class="category-adders">
               <form id="preset-category-form" class="category-form"><label for="category-preset" data-i18n="category.preset">Category preset</label><div class="category-form-row"><select id="category-preset"></select><button type="submit" data-i18n="category.addPreset">Add preset</button></div></form>
               <form id="category-form" class="category-form" novalidate><label for="category-name" data-i18n="category.name">Category name</label><div class="category-form-row"><input id="category-name" maxlength="80" data-i18n-placeholder="category.placeholder" placeholder="New category" aria-describedby="category-error"><button type="submit" data-i18n="category.add">Add category</button></div><p id="category-error" class="bounds-error" role="alert" hidden></p></form>
@@ -1772,13 +1786,12 @@ tbody th {
         </section>
       </div>
       <div class="controls">
-        <section class="scenarios" aria-labelledby="scenarios-title"><h2 id="scenarios-title" data-i18n="scenario.heading">Example scenarios</h2><div id="scenario-list" class="presets"></div></section>
-        <section id="color-legend" class="color-legend" aria-labelledby="color-legend-title"><h2 id="color-legend-title" data-i18n="palette.heading">Color legend</h2><p data-i18n="palette.description">The prior interval sets the width of the gray top. Red, yellow, and green deepen toward the bottom.</p>
-          <canvas id="legend-canvas" role="img" data-i18n="palette.canvasFallback" data-i18n-aria-label="palette.canvasAria" aria-label="Color legend widening downward: uncertain gray spans the top according to the prior interval; against is red at bottom left, dissonance is yellow at bottom center, and for is green at bottom right. The point shows the current summary.">Color legend.</canvas>
+        <section class="color-legend-settings" aria-labelledby="color-legend-settings-title"><h2 id="color-legend-settings-title" data-i18n="palette.settings">Color settings</h2><p data-i18n="palette.description">The prior interval sets the width of the gray top. Red, yellow, and green deepen toward the bottom.</p>
           <div class="color" data-i18n-aria-label="palette.currentAria" aria-label="Current summary color"><span id="swatch" class="swatch" aria-hidden="true"></span><code id="hex">#9ca3af</code></div>
-          <div class="palette"><label for="gray-anchor"><span data-i18n="palette.uncertain">Uncertain</span><input id="gray-anchor" type="color"></label><label for="yellow-anchor"><span data-i18n="palette.dissonance">Dissonance</span><input id="yellow-anchor" type="color"></label><label for="red-anchor"><span data-i18n="palette.against">Against</span><input id="red-anchor" type="color"></label><label for="green-anchor"><span data-i18n="palette.for">For</span><input id="green-anchor" type="color"></label><label class="threshold" for="saturation-threshold"><span data-i18n="palette.saturation">Evidence needed for full color</span><strong><output id="saturation-threshold-value">20</output> dBan</strong><input id="saturation-threshold" type="range" min="5" max="40" step="1" aria-describedby="palette-threshold-help"></label></div>
+          <div class="palette"><label for="gray-anchor"><span data-i18n="palette.uncertain">Uncertain</span><input id="gray-anchor" type="color"></label><label for="yellow-anchor"><span data-i18n="palette.dissonance">Dissonance</span><input id="yellow-anchor" type="color"></label><label for="red-anchor"><span data-i18n="palette.against">Opposes</span><input id="red-anchor" type="color"></label><label for="green-anchor"><span data-i18n="palette.for">Supports</span><input id="green-anchor" type="color"></label><label class="threshold" for="saturation-threshold"><span data-i18n="palette.saturation">Evidence needed for full color</span><strong><output id="saturation-threshold-value">20</output> dBan</strong><input id="saturation-threshold" type="range" min="5" max="40" step="1" aria-describedby="palette-threshold-help"></label></div>
           <p id="palette-threshold-help" class="palette-help" data-i18n="palette.help">Lower values give stronger colors sooner. The gray top widens with the prior interval. Red and green deepen toward the lower corners; yellow deepens toward the lower center.</p>
         </section>
+        <section class="scenarios" aria-labelledby="scenarios-title"><h2 id="scenarios-title" data-i18n="scenario.heading">Example scenarios</h2><div id="scenario-list" class="presets"></div></section>
       </div>
     </div>
     <section class="explanation" aria-labelledby="explanation-title">
@@ -3368,18 +3381,18 @@ tbody th {
       "evidence.heading": "Evidence",
       "evidence.editorLabel": "Evidence editor",
       "evidence.category": "Category",
-      "evidence.for": "For",
-      "evidence.against": "Against",
-      "evidence.addFor": "+ For",
-      "evidence.addAgainst": "+ Against",
-      "evidence.addAria": "Add {direction} evidence from {category}",
-      "evidence.weightAria": "{direction} illustrative weight for {category}",
+      "evidence.for": "Supports",
+      "evidence.against": "Opposes",
+      "evidence.addFor": "+ Supports",
+      "evidence.addAgainst": "+ Opposes",
+      "evidence.addAria": "Add evidence that {direction} the claim from {category}",
+      "evidence.weightAria": "Illustrative weight for evidence that {direction} the claim from {category}",
       "evidence.illustrative": "Illustrative weights only; adjust them for the evidence and context.",
       "evidence.independence": "Several reports can repeat the same source. Check whether evidence is independent before combining its weight.",
       "evidence.addedLabel": "Added evidence",
       "evidence.empty": "Add an item of evidence.",
       "evidence.count": { one: "{count} evidence item", other: "{count} evidence items" },
-      "evidence.selectAria": "Select evidence item {number}, {category}, {direction}, {weight} decibans",
+      "evidence.selectAria": "Select evidence item {number}, {category}, that {direction} the claim, {weight} decibans",
       "evidence.remove": "Remove",
       "evidence.removeAria": "Remove evidence item {number}",
       "category.heading": "Categories",
@@ -3451,34 +3464,35 @@ tbody th {
       "posterior.offscreen": "This interval is outside the displayed axis.",
       "scenario.heading": "Example scenarios",
       "scenario.none": "No evidence",
-      "scenario.newsAggregatorFor": "1 news aggregator for",
-      "scenario.encyclopediaFor": "1 encyclopedia for",
-      "scenario.newsReportFor": "1 news report for",
-      "scenario.twoNewsReportsFor": "2 news reports for",
-      "scenario.threeNewsReportsFor": "3 news reports for",
-      "scenario.scientificStudyFor": "1 scientific study for",
-      "scenario.officialDataFor": "1 official data source for",
-      "scenario.officialDocumentFor": "1 official document for",
-      "scenario.twoOfficialDocumentsFor": "2 official documents for",
-      "scenario.newsReportAgainst": "1 news report against",
-      "scenario.twoNewsReportsAgainst": "2 news reports against",
-      "scenario.officialDataAgainst": "1 official data source against",
-      "scenario.newsReportForAgainst": "1 news report for + 1 against",
-      "scenario.officialDataAgainstTwoNewsReportsFor": "1 official data source against + 2 news reports for",
+      "scenario.newsAggregatorFor": "1 news aggregator supports",
+      "scenario.encyclopediaFor": "1 encyclopedia supports",
+      "scenario.newsReportFor": "1 news report supports",
+      "scenario.twoNewsReportsFor": "2 news reports support",
+      "scenario.threeNewsReportsFor": "3 news reports support",
+      "scenario.scientificStudyFor": "1 scientific study supports",
+      "scenario.officialDataFor": "1 official data source supports",
+      "scenario.officialDocumentFor": "1 official document supports",
+      "scenario.twoOfficialDocumentsFor": "2 official documents support",
+      "scenario.newsReportAgainst": "1 news report opposes",
+      "scenario.twoNewsReportsAgainst": "2 news reports oppose",
+      "scenario.officialDataAgainst": "1 official data source opposes",
+      "scenario.newsReportForAgainst": "1 news report supports + 1 opposes",
+      "scenario.officialDataAgainstTwoNewsReportsFor": "1 official data source opposes + 2 news reports support",
       "palette.heading": "Color legend",
+      "palette.settings": "Color settings",
       "palette.description": "The prior interval sets the width of the gray top. Red, yellow, and green deepen toward the bottom.",
-      "palette.canvasAria": "Color legend widening downward: uncertain gray spans the top according to the prior interval; against is red at bottom left, dissonance is yellow at bottom center, and for is green at bottom right. The point shows the current summary.",
+      "palette.canvasAria": "Color legend widening downward: uncertain gray spans the top according to the prior interval; opposing evidence is red at bottom left, dissonance is yellow at bottom center, and supporting evidence is green at bottom right. The point shows the current summary.",
       "palette.canvasFallback": "Color legend.",
       "palette.currentAria": "Current summary color",
       "palette.saturation": "Evidence needed for full color",
       "palette.uncertain": "Uncertain",
       "palette.dissonance": "Dissonance",
-      "palette.against": "Against",
-      "palette.for": "For",
+      "palette.against": "Opposes",
+      "palette.for": "Supports",
       "palette.help": "Lower values give stronger colors sooner. The gray top widens with the prior interval. Red and green deepen toward the lower corners; yellow deepens toward the lower center.",
       "action.reset": "Reset",
-      "direction.for": "for",
-      "direction.against": "against",
+      "direction.for": "supports",
+      "direction.against": "opposes",
       "side.left": "left",
       "side.right": "right",
       "side.none": "none",
@@ -3490,11 +3504,11 @@ tbody th {
       "band.strong": "Strong",
       "band.very strong": "Very strong",
       "band.decisive": "Decisive",
-      "band.anecdotal against": "Anecdotal against",
-      "band.moderate against": "Moderate against",
-      "band.strong against": "Strong against",
-      "band.very strong against": "Very strong against",
-      "band.decisive against": "Decisive against",
+      "band.anecdotal against": "Anecdotal opposition",
+      "band.moderate against": "Moderate opposition",
+      "band.strong against": "Strong opposition",
+      "band.very strong against": "Very strong opposition",
+      "band.decisive against": "Decisive opposition",
       "probability.lower": "Probability ≥ {percentage}%",
       "probability.upper": "Probability ≤ {percentage}%",
       "probability.exact": "Probability = {percentage}%",
@@ -3521,11 +3535,11 @@ tbody th {
       "explanation.heading": "Lire le diagramme",
       "explanation.intro": "Ce calculateur illustre la mise à jour bayésienne : les preuves transforment un avis a priori en plage a posteriori. Ajoutez des éléments pour comparer le poids combiné des preuves à cette plage.",
       "explanation.decibansTerm": "Décibans",
-      "explanation.decibansDefinition": "Une unité logarithmique qui exprime le poids des preuves. Les valeurs positives soutiennent une affirmation, les valeurs négatives jouent contre elle et +10 dBan multiplie les cotes par dix.",
+      "explanation.decibansDefinition": "Une unité logarithmique qui exprime le poids des preuves. Les valeurs positives soutiennent une affirmation, les valeurs négatives s’y opposent et +10 dBan multiplie les cotes par dix.",
       "explanation.priorsTerm": "A priori et a posteriori",
       "explanation.priorsDefinition": "Définissez une plage a priori avant d’ajouter des preuves. Le diagramme montre la plage a posteriori après application du poids combiné.",
       "explanation.dissonanceTerm": "Dissonance",
-      "explanation.dissonanceDefinition": "La proportion du poids absolu des preuves annulée par des poids opposés. Elle atteint 100 % lorsque les poids s’annulent.",
+      "explanation.dissonanceDefinition": "La proportion du poids absolu des preuves annulée par des poids qui s’opposent. Elle atteint 100 % lorsque les poids s’annulent.",
       "explanation.readmeLink": "Lire la documentation",
       "explanation.sourceLink": "Voir le code source",
       "explanation.npmLink": "Utiliser le paquet npm",
@@ -3555,18 +3569,18 @@ tbody th {
       "evidence.heading": "Preuves",
       "evidence.editorLabel": "Éditeur de preuves",
       "evidence.category": "Catégorie",
-      "evidence.for": "Pour",
-      "evidence.against": "Contre",
-      "evidence.addFor": "+ Pour",
-      "evidence.addAgainst": "+ Contre",
-      "evidence.addAria": "Ajouter une preuve {direction} de catégorie {category}",
-      "evidence.weightAria": "Poids illustratif {direction} pour {category}",
+      "evidence.for": "Supporte",
+      "evidence.against": "Oppose",
+      "evidence.addFor": "+ Supporte",
+      "evidence.addAgainst": "+ Oppose",
+      "evidence.addAria": "Ajouter une preuve qui {direction} l’affirmation, catégorie {category}",
+      "evidence.weightAria": "Poids illustratif d’une preuve qui {direction} l’affirmation, catégorie {category}",
       "evidence.illustrative": "Poids donnés à titre illustratif ; réglez-les selon la preuve et le contexte.",
       "evidence.independence": "Plusieurs articles peuvent reprendre la même source. Vérifiez l’indépendance des preuves avant de combiner leur poids.",
       "evidence.addedLabel": "Preuves ajoutées",
       "evidence.empty": "Ajoutez une preuve.",
       "evidence.count": { one: "{count} preuve", other: "{count} preuves" },
-      "evidence.selectAria": "Sélectionner la preuve {number}, {category}, {direction}, {weight} décibans",
+      "evidence.selectAria": "Sélectionner la preuve {number}, {category}, qui {direction} l’affirmation, {weight} décibans",
       "evidence.remove": "Retirer",
       "evidence.removeAria": "Retirer la preuve {number}",
       "category.heading": "Catégories",
@@ -3650,22 +3664,23 @@ tbody th {
       "scenario.newsReportAgainst": "1 article de presse contredit",
       "scenario.twoNewsReportsAgainst": "2 articles de presse contredisent",
       "scenario.officialDataAgainst": "1 donnée officielle contredit",
-      "scenario.newsReportForAgainst": "1 article de presse pour + 1 article de presse contre",
-      "scenario.officialDataAgainstTwoNewsReportsFor": "1 donnée officielle contre + 2 articles de presse pour",
+      "scenario.newsReportForAgainst": "1 article de presse supporte + 1 article de presse s’oppose",
+      "scenario.officialDataAgainstTwoNewsReportsFor": "1 donnée officielle s’oppose + 2 articles de presse supportent",
       "palette.heading": "Légende des couleurs",
+      "palette.settings": "Réglages des couleurs",
       "palette.description": "L’intervalle a priori détermine la largeur du haut gris. Le rouge, le jaune et le vert s’intensifient vers le bas.",
-      "palette.canvasAria": "Légende des couleurs s’élargissant vers le bas : le gris de l’incertitude occupe le haut selon l’intervalle a priori ; Contre est rouge en bas à gauche, Dissonance est jaune en bas au centre et Pour est vert en bas à droite. Le point indique la synthèse actuelle.",
+      "palette.canvasAria": "Légende des couleurs s’élargissant vers le bas : le gris de l’incertitude occupe le haut selon l’intervalle a priori ; Oppose est rouge en bas à gauche, Dissonance est jaune en bas au centre et Supporte est vert en bas à droite. Le point indique la synthèse actuelle.",
       "palette.canvasFallback": "Légende des couleurs.",
       "palette.currentAria": "Couleur de la synthèse actuelle",
       "palette.saturation": "Poids requis pour une couleur intense",
       "palette.uncertain": "Incertitude",
       "palette.dissonance": "Dissonance",
-      "palette.against": "Contre",
-      "palette.for": "Pour",
+      "palette.against": "Oppose",
+      "palette.for": "Supporte",
       "palette.help": "Des valeurs plus faibles renforcent les couleurs plus tôt. Le haut gris s’élargit avec l’intervalle a priori. Le rouge et le vert s’intensifient vers les coins inférieurs ; le jaune s’intensifie vers le bas au centre.",
       "action.reset": "Réinitialiser",
-      "direction.for": "pour",
-      "direction.against": "contre",
+      "direction.for": "supporte",
+      "direction.against": "s’oppose à",
       "side.left": "gauche",
       "side.right": "droite",
       "side.none": "aucun",
@@ -3677,11 +3692,11 @@ tbody th {
       "band.strong": "Fort",
       "band.very strong": "Très fort",
       "band.decisive": "Décisif",
-      "band.anecdotal against": "Anecdotique contre",
-      "band.moderate against": "Modéré contre",
-      "band.strong against": "Fort contre",
-      "band.very strong against": "Très fort contre",
-      "band.decisive against": "Décisif contre",
+      "band.anecdotal against": "Anecdotique : s’oppose",
+      "band.moderate against": "Modéré : s’oppose",
+      "band.strong against": "Fort : s’oppose",
+      "band.very strong against": "Très fort : s’oppose",
+      "band.decisive against": "Décisif : s’oppose",
       "probability.lower": "Probabilité ≥ {percentage} %",
       "probability.upper": "Probabilité ≤ {percentage} %",
       "probability.exact": "Probabilité = {percentage} %",
@@ -3809,6 +3824,7 @@ tbody th {
   var coneDescription = document.querySelector("#cone-description");
   var resultantLabel = document.querySelector("#resultant-label");
   var colorLegend = document.querySelector("#color-legend");
+  var colorLegendSettings = document.querySelector(".color-legend-settings");
   var legendCanvas = document.querySelector("#legend-canvas");
   var legendContext = legendCanvas.getContext("2d", { alpha: true });
   var saturationThreshold = document.querySelector("#saturation-threshold");
@@ -3874,8 +3890,6 @@ tbody th {
       i18n.t(diagramDetailsExpanded ? "diagram.collapseDetails" : "diagram.expandDetails")
     );
     diagramDetailsToggle.classList.toggle("is-expanded", diagramDetailsExpanded);
-    coneWrap.classList.toggle("details-expanded", diagramDetailsExpanded);
-    coneWrap.closest(".result")?.classList.toggle("diagram-expanded", diagramDetailsExpanded);
   }
   function setDiagramDetailsExpanded(expanded) {
     diagramDetailsExpanded = expanded;
@@ -4211,7 +4225,8 @@ tbody th {
     contextLocal.setTransform(ratio, 0, 0, ratio, 0, 0);
   }
   function drawColorLegend() {
-    const width = Math.max(1, Math.min(260, Math.round(colorLegend.clientWidth - 32)));
+    const maximumWidth = window.matchMedia("(max-width: 1040px)").matches ? window.matchMedia("(max-height: 620px)").matches ? 190 : 220 : 260;
+    const width = Math.max(1, Math.min(maximumWidth, Math.round(colorLegend.clientWidth - 32)));
     const height = Math.round(width * 0.66);
     resizeCanvas2(legendCanvas, legendContext, width, height);
     const centerX = width / 2;
@@ -4341,8 +4356,10 @@ tbody th {
       const y = step?.visibleRibbon?.y2 ?? breakItem?.y ?? 0;
       requestAnimationFrame(() => {
         const canvasBounds = canvas.getBoundingClientRect();
+        const pinnedLegendHeight = getComputedStyle(colorLegend).position === "sticky" ? colorLegend.getBoundingClientRect().height + 12 : 0;
+        const availableViewport = Math.max(1, window.innerHeight - pinnedLegendHeight);
         window.scrollTo({
-          top: Math.max(0, window.scrollY + canvasBounds.top + y - window.innerHeight / 3),
+          top: Math.max(0, window.scrollY + canvasBounds.top + y - pinnedLegendHeight - availableViewport / 3),
           behavior: "smooth"
         });
       });
@@ -4453,6 +4470,7 @@ tbody th {
       geometry = void 0;
       currentDiagram = void 0;
       colorLegend.hidden = true;
+      colorLegendSettings.hidden = true;
       renderHistory();
       document.querySelector("#dissonance").textContent = i18n.percent(invalidSummary.dissonance);
       probability.hidden = true;
@@ -4498,6 +4516,7 @@ tbody th {
     visualization.hidden = false;
     colorSummary.hidden = false;
     colorLegend.hidden = false;
+    colorLegendSettings.hidden = false;
     latestColor = diagram.resultant.color;
     resultantLabel.style.color = latestColor;
     drawColorLegend();
