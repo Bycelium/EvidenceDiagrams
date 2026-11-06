@@ -18,6 +18,14 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  demo:
+    dependencies:
+      '@bycelium/evidence-diagrams':
+        specifier: workspace:*
+        version: link:..
+
+  packages/propagation-math: {}
+
 packages:
 
   '@esbuild/aix-ppc64@0.28.2':

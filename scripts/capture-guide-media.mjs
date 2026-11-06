@@ -1,81 +1,59 @@
 #!/usr/bin/env node
 
-/**
- * Capture stills and frame sequences for the documentation guide.
- *
- * Example:
- *   node scripts/capture-guide-media.mjs --output-dir /tmp/evidence-guide \
- *     --playwright-module /path/to/node_modules/@playwright/test/index.js \
- *     --ffmpeg-path /path/to/ffmpeg
- *
- * The caller supplies ffmpeg explicitly; this project does not install it.
- */
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+/** Capture the README stills and short UI walkthroughs from the generated demo. */
+import { copyFile, mkdir, rm, stat } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const DEFAULT_URL = pathToFileURL(resolve(ROOT, 'demo/index.html')).href;
+const FRAME_RATE = 10;
 
 function usage() {
-  return `Usage: node scripts/capture-guide-media.mjs --output-dir <directory> [options]
-
-Captures 10 named PNG stills and these PNG frame sequences:
-  adding-evidence/, changing-prior/, changing-weight/
+  return `Usage: node scripts/capture-guide-media.mjs --output-dir <directory> --playwright-module <module> --ffmpeg-path <path> [options]
 
 Options:
-  --url <url>                 Demo URL (default: ${DEFAULT_URL})
-  --output-dir <directory>    Destination directory (required)
-  --playwright-module <path>  Playwright package or module path (default: @playwright/test)
+  --output-dir <directory>    Destination for the PNG and GIF files (required)
+  --playwright-module <path>  Playwright module path (required)
+  --ffmpeg-path <path>        ffmpeg used to encode the GIFs (required)
   --browser-path <path>       Chromium executable path
-  --ffmpeg-path <path>        ffmpeg executable used to encode the GIFs
-  --frames-per-state <count>  Duplicate each sequence state this many times (default: 12)
-  --contact-sheet-only        Render contact-sheet.png from existing stills
-  --gifs-only                 Capture only GIF frame sequences
-  --no-encode                 Leave frame sequences as PNGs without encoding GIFs
-  --headed                    Show the browser while capturing
+  --url <url>                 Demo URL (default: ${DEFAULT_URL})
+  --gifs-only                 Capture only the two animated walkthroughs
+  --pngs-only                 Capture only the three still images
+  --headed                    Show Chromium while capturing
   --help                      Show this message
 `;
 }
 
 function parseArguments(args) {
-  const options = {
-    url: DEFAULT_URL,
-    playwrightModule: '@playwright/test',
-    framesPerState: 12,
-    headed: false,
-    contactSheetOnly: false,
-    gifsOnly: false,
-    noEncode: false,
-  };
+  const options = { url: DEFAULT_URL, headed: false, gifsOnly: false, pngsOnly: false };
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
     if (argument === '--help') return { help: true };
     if (argument === '--headed') { options.headed = true; continue; }
-    if (argument === '--contact-sheet-only') { options.contactSheetOnly = true; continue; }
     if (argument === '--gifs-only') { options.gifsOnly = true; continue; }
-    if (argument === '--no-encode') { options.noEncode = true; continue; }
+    if (argument === '--pngs-only') { options.pngsOnly = true; continue; }
     const field = {
-      '--url': 'url',
       '--output-dir': 'outputDir',
       '--playwright-module': 'playwrightModule',
-      '--browser-path': 'browserPath',
       '--ffmpeg-path': 'ffmpegPath',
-      '--frames-per-state': 'framesPerState',
+      '--browser-path': 'browserPath',
+      '--url': 'url',
     }[argument];
     if (!field) throw new Error(`Unknown option: ${argument}`);
     const value = args[index + 1];
     if (!value || value.startsWith('--')) throw new Error(`${argument} requires a value.`);
-    options[field] = field === 'framesPerState' ? Number(value) : value;
+    options[field] = value;
     index += 1;
   }
-  if (!options.outputDir) throw new Error('--output-dir is required.');
-  if (!Number.isInteger(options.framesPerState) || options.framesPerState < 1) {
-    throw new Error('--frames-per-state must be a positive integer.');
+  for (const field of ['outputDir', 'playwrightModule', 'ffmpegPath']) {
+    if (!options[field]) throw new Error(`--${field.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)} is required.`);
   }
+  if (options.gifsOnly && options.pngsOnly) throw new Error('--gifs-only and --pngs-only cannot be combined.');
   options.outputDir = resolve(options.outputDir);
-  if (options.ffmpegPath) options.ffmpegPath = resolve(options.ffmpegPath);
+  options.ffmpegPath = resolve(options.ffmpegPath);
+  if (options.browserPath) options.browserPath = resolve(options.browserPath);
   return options;
 }
 
@@ -83,260 +61,10 @@ async function loadPlaywright(moduleSpecifier) {
   const source = isAbsolute(moduleSpecifier) || moduleSpecifier.startsWith('.')
     ? pathToFileURL(resolve(moduleSpecifier)).href
     : moduleSpecifier;
-  try {
-    const imported = await import(source);
-    const playwright = imported.default ?? imported;
-    if (!playwright.chromium?.launch) throw new Error('The module does not export chromium.launch().');
-    return playwright;
-  } catch (error) {
-    throw new Error(
-      `Could not load Playwright from ${moduleSpecifier}. Install @playwright/test and its Chromium browser, `
-      + 'or pass --playwright-module /absolute/path/to/@playwright/test/index.js. '
-      + `Original error: ${error.message}`,
-    );
-  }
-}
-
-async function settle(page) {
-  await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
-}
-
-async function setNumberInput(page, selector, value) {
-  const input = page.locator(selector);
-  await input.fill(String(value));
-  await input.dispatchEvent('input');
-  await settle(page);
-}
-
-async function setRangeInput(page, selector, value) {
-  const input = typeof selector === 'string' ? page.locator(selector) : selector;
-  await input.evaluate((element, nextValue) => {
-    element.value = String(nextValue);
-    element.dispatchEvent(new Event('input', { bubbles: true }));
-  }, value);
-  await settle(page);
-}
-
-async function createPage(browser, url, pageErrors) {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
-  page.on('pageerror', (error) => pageErrors.push(error.stack ?? error.message));
-  await page.goto(url, { waitUntil: 'load' });
-  await page.locator('#category-rows tr').first().waitFor();
-  const saturation = await page.locator('#saturation-threshold').evaluate((input) => ({ min: input.min, max: input.max, value: input.value }));
-  if (saturation.min !== '5' || saturation.max !== '40' || saturation.value !== '20') {
-    throw new Error(`Expected saturation control min 5, max 40, default 20; received ${JSON.stringify(saturation)}.`);
-  }
-  await settle(page);
-  return page;
-}
-
-async function applyScenario(page, ids) {
-  await page.evaluate((scenarioIds) => {
-    const button = scenarioIds
-      .map((id) => document.querySelector(`button[data-scenario="${id}"]`))
-      .find(Boolean);
-    if (!(button instanceof HTMLButtonElement)) {
-      throw new Error(`The demo does not provide any required scenario: ${scenarioIds.join(', ')}.`);
-    }
-    button.click();
-  }, ids);
-  await settle(page);
-}
-
-async function addEvidence(page, categoryId, direction) {
-  await page.locator(`tr[data-category-id="${categoryId}"] .add-evidence[data-direction="${direction}"]`).evaluate((button) => button.click());
-  await settle(page);
-}
-
-async function assertCaptureControlsVisible(page, sequence) {
-  const selectors = sequence === 'changing-prior'
-    ? ['#prior-min-decibans', '#prior-max-decibans']
-    : sequence === 'changing-weight'
-      ? ['#category-rows tr[data-capture-active] input[type="range"]']
-      : ['tr[data-category-id="default-news-report"] input[type="range"]', 'tr[data-category-id="default-news-report"] .add-evidence'];
-  const clipped = await page.evaluate((captureSelectors) => captureSelectors.flatMap((selector) =>
-    [...document.querySelectorAll(selector)].flatMap((element) => {
-      const style = getComputedStyle(element);
-      const box = element.getBoundingClientRect();
-      if (style.display === 'none' || style.visibility === 'hidden' || box.width === 0 || box.height === 0) return [];
-      return box.left < 0 || box.top < 0 || box.right > innerWidth || box.bottom > innerHeight ? [selector] : [];
-    }),
-  ), selectors);
-  if (clipped.length) throw new Error(`Focused ${sequence} controls are clipped: ${[...new Set(clipped)].join(', ')}.`);
-}
-
-const NEWS_FOR = 'tr[data-category-id="default-news-report"] input[data-direction="for"]';
-const NEWS_AGAINST = 'tr[data-category-id="default-news-report"] input[data-direction="against"]';
-const OFFICIAL_DATA_AGAINST = 'tr[data-category-id="default-official-data"] input[data-direction="against"]';
-
-const STILLS = [
-  ['no-evidence', []],
-  ['color-legend', ['news-report-for']],
-  ['add-evidence', ['news-report-for']],
-  ['weak-evidence', ['news-report-for']],
-  ['positive-agreement', ['three-news-reports-for']],
-  ['negative-agreement', ['two-news-reports-against']],
-  ['evidence-path', ['official-data-against-two-news-reports-for']],
-  ['dissonant-evidence', ['news-report-for-against']],
-  ['prior-interval', ['news-report-for']],
-  ['exact-prior', ['news-report-for']],
-];
-
-async function screenshotStill(page, name, path) {
-  const targets = {
-    'no-evidence': '.result',
-    'color-legend': '#color-legend',
-    'add-evidence': '.settings',
-    'weak-evidence': '.result',
-    'positive-agreement': '.result',
-    'negative-agreement': '.result',
-    'evidence-path': '.result',
-    'dissonant-evidence': '.result',
-    'prior-interval': '.result',
-    'exact-prior': '.result',
-  };
-  const target = targets[name];
-  if (target) await page.locator(target).screenshot({ path });
-  else await page.screenshot({ path });
-}
-
-async function captureStills(browser, options, pageErrors) {
-  for (const [name, scenarios] of STILLS) {
-    const page = await createPage(browser, options.url, pageErrors);
-    try {
-      if (scenarios.length) await applyScenario(page, scenarios);
-      if (['add-evidence', 'prior-interval', 'exact-prior'].includes(name)) {
-        await setRangeInput(page, NEWS_FOR, 5);
-      }
-      if (name === 'weak-evidence') await setRangeInput(page, NEWS_FOR, 2);
-      if (name === 'exact-prior') {
-        await setNumberInput(page, '#prior-min-decibans', 0);
-        await setNumberInput(page, '#prior-max-decibans', 0);
-      }
-      if (name === 'positive-agreement') {
-        await setRangeInput(page, NEWS_FOR, 10);
-      }
-      if (name === 'negative-agreement') {
-        await addEvidence(page, 'default-news-report', 'against');
-        await setRangeInput(page, NEWS_AGAINST, 10);
-      }
-      if (name === 'evidence-path') {
-        await page.locator('#reset').click();
-        await addEvidence(page, 'default-news-report', 'for');
-        await addEvidence(page, 'default-news-report', 'against');
-        await addEvidence(page, 'default-news-report', 'for');
-      }
-      await screenshotStill(page, name, resolve(options.outputDir, `${name}.png`));
-    } finally { await page.close(); }
-  }
-  return STILLS.map(([name]) => `${name}.png`);
-}
-
-async function captureSequence(browser, options, pageErrors, name, perform) {
-  const directory = resolve(options.outputDir, name);
-  await mkdir(directory, { recursive: true });
-  const page = await createPage(browser, options.url, pageErrors);
-  const compactHeight = name === 'changing-prior' ? 420 : 540;
-  await page.setViewportSize({ width: 960, height: compactHeight });
-  await page.addStyleTag({ content: `
-    html, body { margin: 0; overflow: hidden; background: #f7f9fc; }
-    main { width: 940px !important; padding: 0 !important; }
-    .introduction, .controls, #color-legend, .illustrative-note, .category-adders,
-    .evidence-header, #evidence-history, #trajectory-empty, .weight-band,
-    .category-name-cell small, .remove-category { display: none !important; }
-    .workspace { display: block !important; width: 940px !important; height: ${compactHeight}px !important; min-height: ${compactHeight}px !important; }
-    .main-column { display: block !important; }
-    .result { position: static !important; box-sizing: border-box; height: 405px !important; min-height: 405px !important; padding: 8px !important; }
-    .cone-viewport { height: 278px !important; }
-    .settings { box-sizing: border-box; height: 135px !important; min-height: 135px !important; padding: 7px 10px !important; overflow: hidden !important; }
-    .settings-header { display: none !important; }
-    .table-wrap { margin: 0 !important; } #category-rows tr { display: none !important; }
-    #category-rows tr[data-capture-active] { display: table-row !important; }
-    #category-rows { font-size: 14px !important; } #category-rows th, #category-rows td { padding: 3px 5px !important; }
-    .weight-setting { gap: 6px !important; } .weight-setting input { width: 110px !important; }
-    .weight-actions { margin-top: 0 !important; } .weight-actions button { padding: 2px 7px !important; }
-    .prior-bounds { display: none !important; }
-  ` });
-  await page.evaluate((sequence) => {
-    const active = sequence === 'changing-weight'
-      ? ['default-news-report', 'default-official-data']
-      : ['default-news-report'];
-    for (const row of document.querySelectorAll('#category-rows tr')) {
-      row.toggleAttribute('data-capture-active', active.includes(row.dataset.categoryId));
-    }
-    if (sequence === 'changing-prior') {
-      document.querySelector('.current-evidence')?.setAttribute('hidden', '');
-      const prior = document.querySelector('.prior-bounds');
-      if (prior) { prior.hidden = false; prior.style.display = 'block'; prior.style.margin = '0'; }
-      document.querySelector('.settings-header')?.setAttribute('hidden', '');
-    }
-  }, name);
-  if (name === 'changing-prior') {
-    await page.addStyleTag({ content: `
-      .result { height: 340px !important; min-height: 340px !important; } .cone-viewport { height: 212px !important; }
-      .settings { height: 80px !important; min-height: 80px !important; } .prior-bounds { display: block !important; margin: 0 !important; }
-      .prior-bounds h3 { display: none !important; } .bounds-fields { display: flex !important; gap: 18px !important; }
-      .prior-presets, .bounds-help, .bounds-error { display: none !important; }
-    ` });
-  }
-  if (name === 'changing-weight') {
-    await page.addStyleTag({ content: '.weight-actions { display: none !important; }' });
-  }
-  await settle(page);
-  let frame = 0;
-  async function state(action, repeats = options.framesPerState) {
-    await action();
-    await settle(page);
-    await assertCaptureControlsVisible(page, name);
-    const source = resolve(directory, `frame-${String(frame).padStart(3, '0')}.png`);
-    await page.screenshot({ path: source });
-    frame += 1;
-    for (let duplicate = 1; duplicate < repeats; duplicate += 1) {
-      await copyFile(source, resolve(directory, `frame-${String(frame).padStart(3, '0')}.png`));
-      frame += 1;
-    }
-  }
-  try { await perform(page, state); } finally { await page.close(); }
-  return { name, frames: frame };
-}
-
-async function captureSequences(browser, options, pageErrors) {
-  return [
-    await captureSequence(browser, options, pageErrors, 'adding-evidence', async (page, state) => {
-      await state(async () => {});
-      await state(() => setRangeInput(page, NEWS_FOR, 14));
-      await state(() => addEvidence(page, 'default-news-report', 'for'));
-      await state(() => addEvidence(page, 'default-news-report', 'for'));
-      await state(async () => {
-        await addEvidence(page, 'default-news-report', 'for');
-        const text = await page.locator('#resultant-label, #probability-text').allTextContents();
-        if (!text.some((value) => /\b42\b/.test(value)) || !text.some((value) => /99\.8/.test(value))) {
-          throw new Error(`The net-42 extreme GIF state must show 42 dBan and at least 99.8% in English; received ${JSON.stringify(text)}.`);
-        }
-      }, options.framesPerState * 2);
-    }),
-    await captureSequence(browser, options, pageErrors, 'changing-prior', async (page, state) => {
-      await applyScenario(page, ['news-report-for']);
-      await setRangeInput(page, NEWS_FOR, 25);
-      await state(async () => {});
-      await state(() => setNumberInput(page, '#prior-min-decibans', -10));
-      await state(() => setNumberInput(page, '#prior-max-decibans', 10));
-      await state(() => setNumberInput(page, '#prior-min-decibans', -5));
-      await state(() => setNumberInput(page, '#prior-max-decibans', 5));
-      await state(async () => {
-        await setNumberInput(page, '#prior-min-decibans', 0);
-        await setNumberInput(page, '#prior-max-decibans', 0);
-      });
-    }),
-    await captureSequence(browser, options, pageErrors, 'changing-weight', async (page, state) => {
-      await applyScenario(page, ['official-data-against-two-news-reports-for']);
-      await state(async () => {});
-      await state(() => setRangeInput(page, NEWS_FOR, 18));
-      await state(() => setRangeInput(page, NEWS_FOR, 14));
-      await state(() => setRangeInput(page, OFFICIAL_DATA_AGAINST, 12));
-      await state(() => setRangeInput(page, NEWS_FOR, 8), options.framesPerState * 2);
-    }),
-  ];
+  const imported = await import(source);
+  const playwright = imported.default ?? imported;
+  if (!playwright.chromium?.launch) throw new Error(`${moduleSpecifier} does not export chromium.launch().`);
+  return playwright;
 }
 
 function run(command, args) {
@@ -346,55 +74,253 @@ function run(command, args) {
     child.stdout.on('data', (chunk) => { output += chunk; });
     child.stderr.on('data', (chunk) => { output += chunk; });
     child.on('error', reject);
-    child.on('close', (code) => code === 0 ? resolvePromise(output) : reject(new Error(`${command} exited with ${code}: ${output}`)));
+    child.on('close', (code) => {
+      if (code === 0) resolvePromise(output);
+      else reject(new Error(`${command} exited with ${code}: ${output}`));
+    });
   });
 }
 
-async function encodeGif(ffmpegPath, outputDirectory, name) {
+async function settle(page) {
+  await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+}
+
+async function createPage(browser, url, options = {}) {
+  const context = await browser.newContext({
+    viewport: options.viewport ?? { width: 1280, height: 900 },
+    deviceScaleFactor: 1,
+    colorScheme: options.colorScheme ?? 'light',
+    locale: 'en-US',
+  });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.stack ?? error.message));
+  await page.goto(url, { waitUntil: 'load' });
+  await page.locator('.inquiry-focus-heading').waitFor();
+  await settle(page);
+  return { page, context, errors };
+}
+
+async function ensureExpanded(locator, expanded) {
+  await locator.waitFor();
+  const current = await locator.getAttribute('aria-expanded');
+  if ((current === 'true') !== expanded) {
+    await locator.click();
+    await locator.page().waitForTimeout(80);
+    await settle(locator.page());
+  }
+}
+
+async function prepareGraph(page, { trailExpanded = true } = {}) {
+  await ensureExpanded(page.locator('.inquiry-focus-heading'), true);
+  await ensureExpanded(page.locator('.inquiry-graph-toggle'), true);
+  await ensureExpanded(page.locator('.inquiry-trail-toggle'), trailExpanded);
+}
+
+async function assertCleanPage(page, errors, label) {
+  await settle(page);
+  if (errors.length) throw new Error(`${label} produced page errors:\n${errors.join('\n')}`);
+  const overflow = await page.evaluate(() => Math.max(
+    document.documentElement.scrollWidth,
+    document.body.scrollWidth,
+  ) - document.documentElement.clientWidth);
+  if (overflow > 1) throw new Error(`${label} overflows the viewport by ${overflow}px.`);
+}
+
+async function capturePngs(browser, options) {
+  const output = [];
+
+  {
+    const { page, context, errors } = await createPage(browser, options.url, {
+      viewport: { width: 1280, height: 860 },
+    });
+    try {
+      await ensureExpanded(
+        page.locator('.inquiry-focus-heading[data-action="toggle-claim"]'),
+        true,
+      );
+      await ensureExpanded(
+        page.locator('.inquiry-graph-toggle[data-action="toggle-graph"]'),
+        false,
+      );
+      const path = resolve(options.outputDir, 'inquiry-overview-light.png');
+      const clip = await page.evaluate(() => {
+        const main = document.querySelector('main');
+        const focus = document.querySelector('.inquiry-focus');
+        if (!(main instanceof HTMLElement) || !(focus instanceof HTMLElement)) {
+          throw new Error('The overview requires main and .inquiry-focus.');
+        }
+        const mainBounds = main.getBoundingClientRect();
+        const focusBounds = focus.getBoundingClientRect();
+        return {
+          x: mainBounds.left,
+          y: mainBounds.top,
+          width: mainBounds.width,
+          height: focusBounds.bottom + 16 - mainBounds.top,
+        };
+      });
+      await page.screenshot({ path, clip });
+      await assertCleanPage(page, errors, 'Light overview');
+      output.push(path);
+    } finally { await context.close(); }
+  }
+
+  {
+    const { page, context, errors } = await createPage(browser, options.url, {
+      viewport: { width: 1280, height: 900 }, colorScheme: 'dark',
+    });
+    try {
+      await ensureExpanded(
+        page.locator('.inquiry-focus-heading[data-action="toggle-claim"]'),
+        true,
+      );
+      await ensureExpanded(
+        page.locator('.inquiry-graph-toggle[data-action="toggle-graph"]'),
+        true,
+      );
+      const evidence = page.locator(
+        '[data-evidence-id="nuclear.e-renewables-root"] .inquiry-flow-label-button',
+      );
+      await evidence.scrollIntoViewIfNeeded();
+      await evidence.click();
+      await page.locator('#inquiry-evidence-panel[open]').waitFor();
+      await settle(page);
+      const path = resolve(options.outputDir, 'evidence-drawer-dark.png');
+      await page.locator('#inquiry-evidence-panel').screenshot({ path });
+      await assertCleanPage(page, errors, 'Dark evidence drawer');
+      output.push(path);
+    } finally { await context.close(); }
+  }
+
+  {
+    const { page, context, errors } = await createPage(browser, options.url, {
+      viewport: { width: 1080, height: 760 },
+    });
+    try {
+      await page.locator('#inquiry-root-list [data-action="add-root"]').click();
+      const dialog = page.locator('#inquiry-dialog[open]');
+      await dialog.waitFor();
+      const path = resolve(options.outputDir, 'new-root-dialog.png');
+      await dialog.screenshot({ path });
+      await assertCleanPage(page, errors, 'New root dialog');
+      output.push(path);
+    } finally { await context.close(); }
+  }
+  return output;
+}
+
+async function createFrameWriter(page, directory, target) {
+  await rm(directory, { recursive: true, force: true });
+  await mkdir(directory, { recursive: true });
+  let frame = 0;
+  async function capture(repeats = 1) {
+    const path = resolve(directory, `frame-${String(frame).padStart(4, '0')}.png`);
+    await target.screenshot({ path });
+    frame += 1;
+    for (let index = 1; index < repeats; index += 1) {
+      await copyFile(path, resolve(directory, `frame-${String(frame).padStart(4, '0')}.png`));
+      frame += 1;
+    }
+  }
+  return { capture, count: () => frame, page };
+}
+
+async function encodeGif(ffmpegPath, frameDirectory, outputPath) {
   await run(ffmpegPath, [
-    '-y', '-framerate', '12', '-i', resolve(outputDirectory, name, 'frame-%03d.png'),
-    '-filter_complex', 'scale=960:-1:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse',
-    '-fps_mode', 'passthrough', '-loop', '0', resolve(outputDirectory, `${name}.gif`),
+    '-y', '-framerate', String(FRAME_RATE),
+    '-i', resolve(frameDirectory, 'frame-%04d.png'),
+    '-filter_complex', "fps=10,scale='min(960,iw)':-2:flags=lanczos,split[a][b];[a]palettegen=max_colors=72:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle",
+    '-loop', '0', outputPath,
   ]);
 }
 
-async function validateGif(ffmpegPath, outputDirectory, name, expectedFrames, minimumSeconds) {
+async function validateGif(ffmpegPath, path, expectedFrames) {
   const ffprobePath = resolve(dirname(ffmpegPath), 'ffprobe');
-  let output;
-  try {
-    output = await run(ffprobePath, ['-v', 'error', '-count_frames', '-select_streams', 'v:0', '-show_entries', 'stream=nb_read_frames:format=duration', '-of', 'json', resolve(outputDirectory, `${name}.gif`)]);
-  } catch (error) {
-    throw new Error(`Could not inspect ${name}.gif with ffprobe beside --ffmpeg-path: ${error.message}`);
-  }
-  const report = JSON.parse(output);
+  const raw = await run(ffprobePath, [
+    '-v', 'error', '-count_frames', '-select_streams', 'v:0',
+    '-show_entries', 'stream=width,height,nb_read_frames,avg_frame_rate:format=duration,size',
+    '-of', 'json', path,
+  ]);
+  const report = JSON.parse(raw);
+  const stream = report.streams?.[0] ?? {};
   const duration = Number(report.format?.duration);
-  const frames = Number(report.streams?.[0]?.nb_read_frames);
-  if (!Number.isFinite(duration) || duration < minimumSeconds) {
-    throw new Error(`${name}.gif is ${duration}s; expected at least ${minimumSeconds}s.`);
-  }
-  if (!Number.isInteger(frames) || frames !== expectedFrames) {
-    throw new Error(`${name}.gif has ${frames} decoded frames; expected ${expectedFrames}.`);
-  }
-  return { duration, frames };
+  const frames = Number(stream.nb_read_frames);
+  const size = Number(report.format?.size);
+  if (frames !== expectedFrames) throw new Error(`${path} has ${frames} frames; expected ${expectedFrames}.`);
+  if (duration < 6 || duration > 15) throw new Error(`${path} is ${duration}s; expected 6–15s.`);
+  if (size > 2_500_000) throw new Error(`${path} is ${size} bytes; expected at most 2.5 MB.`);
+  return { path, width: Number(stream.width), height: Number(stream.height), frames, duration, size };
 }
 
-async function captureContactSheet(browser, options, pageErrors) {
-  const page = await browser.newPage({ viewport: { width: 1680, height: 1000 }, deviceScaleFactor: 1 });
-  page.on('pageerror', (error) => pageErrors.push(error.stack ?? error.message));
-  const images = await Promise.all(STILLS.map(async ([name]) => ({
-    name,
-    url: `data:image/png;base64,${(await readFile(resolve(options.outputDir, `${name}.png`))).toString('base64')}`,
-  })));
+async function captureChangingPrior(browser, options) {
+  const { page, context, errors } = await createPage(browser, options.url, {
+    viewport: { width: 1000, height: 900 },
+  });
+  const frames = resolve(options.outputDir, '.frames-changing-inquiry-prior');
+  const output = resolve(options.outputDir, 'changing-inquiry-prior.gif');
   try {
-    await page.setContent(`<!doctype html><title>Guide media contact sheet</title><style>
-    body { margin: 24px; background: #e5e7eb; color: #172033; font: 700 18px/1.3 system-ui, sans-serif; }
-    h1 { margin: 0 0 20px; } main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-    figure { margin: 0; padding: 12px; background: white; border-radius: 8px; box-shadow: 0 1px 3px #17203330; }
-    figcaption { margin: 0 0 8px; } img { display: block; width: 100%; height: 300px; object-fit: contain; object-position: top left; }
-  </style><h1>Guide media contact sheet</h1><main>${images.map(({ name, url }) => `<figure><figcaption>${name}.png</figcaption><img src="${url}"></figure>`).join('')}</main>`);
-    await page.waitForFunction(() => [...document.images].every((image) => image.complete && image.naturalWidth > 0));
-    await page.screenshot({ path: resolve(options.outputDir, 'contact-sheet.png'), fullPage: true });
-  } finally { await page.close(); }
+    await prepareGraph(page, { trailExpanded: false });
+    const target = page.locator('.inquiry-focus');
+    await target.scrollIntoViewIfNeeded();
+    const writer = await createFrameWriter(page, frames, target);
+    await writer.capture(18);
+
+    const handle = page.locator('.prior-handle-max');
+    const box = await handle.boundingBox();
+    if (!box) throw new Error('The lower prior handle is not visible.');
+    const startX = box.x + box.width / 2;
+    const startY = box.y + box.height / 2;
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    for (let step = 1; step <= 12; step += 1) {
+      await page.mouse.move(startX + step * 10, startY, { steps: 2 });
+      await settle(page);
+      await writer.capture(3);
+    }
+    await page.mouse.up();
+    await settle(page);
+    await writer.capture(18);
+    const reset = page.locator('.inquiry-prior-reset');
+    await reset.click();
+    await settle(page);
+    await writer.capture(25);
+    await assertCleanPage(page, errors, 'Changing prior');
+    await encodeGif(options.ffmpegPath, frames, output);
+    return validateGif(options.ffmpegPath, output, writer.count());
+  } finally { await context.close(); }
+}
+
+async function captureInvestigatingPremise(browser, options) {
+  const { page, context, errors } = await createPage(browser, options.url, {
+    viewport: { width: 960, height: 720 },
+  });
+  const frames = resolve(options.outputDir, '.frames-investigating-premise');
+  const output = resolve(options.outputDir, 'investigating-premise.gif');
+  try {
+    await prepareGraph(page);
+    const evidence = page.locator('.inquiry-flow-label-button').first();
+    await evidence.scrollIntoViewIfNeeded();
+    const writer = await createFrameWriter(page, frames, page);
+    await writer.capture(18);
+
+    await evidence.click();
+    await page.locator('#inquiry-evidence-panel[open]').waitFor();
+    await settle(page);
+    await writer.capture(28);
+
+    const premise = page.locator('.inquiry-evidence-panel-premise-link');
+    await premise.scrollIntoViewIfNeeded();
+    await premise.click();
+    await page.locator('#inquiry-evidence-panel').waitFor({ state: 'hidden' });
+    await page.locator('.inquiry-breadcrumbs:not([hidden])').waitFor();
+    await page.locator('.inquiry-focus-heading').scrollIntoViewIfNeeded();
+    await settle(page);
+    await writer.capture(34);
+
+    await assertCleanPage(page, errors, 'Investigating a premise');
+    await encodeGif(options.ffmpegPath, frames, output);
+    return validateGif(options.ffmpegPath, output, writer.count());
+  } finally { await context.close(); }
 }
 
 async function main() {
@@ -405,53 +331,29 @@ async function main() {
     return;
   }
   if (options.help) { console.log(usage()); return; }
-  if (!options.contactSheetOnly && !options.noEncode && !options.ffmpegPath) {
-    console.error('--ffmpeg-path is required to encode the three animated GIFs.');
-    process.exitCode = 2;
-    return;
-  }
-
-  let playwright;
-  try { playwright = await loadPlaywright(options.playwrightModule); } catch (error) {
-    console.error(error.message);
-    process.exitCode = 1;
-    return;
-  }
   await mkdir(options.outputDir, { recursive: true });
-  let browser;
+  const playwright = await loadPlaywright(options.playwrightModule);
+  const browser = await playwright.chromium.launch({
+    headless: !options.headed,
+    ...(options.browserPath ? { executablePath: options.browserPath } : {}),
+  });
   try {
-    browser = await playwright.chromium.launch({
-      headless: !options.headed,
-      ...(options.browserPath ? { executablePath: resolve(options.browserPath) } : {}),
-    });
-  } catch (error) {
-    console.error(
-      `Could not launch Chromium. Run \`npx playwright install chromium\`, or pass --browser-path <executable>. `
-      + `Original error: ${error.message}`,
-    );
-    process.exitCode = 1;
-    return;
-  }
-  try {
-    const pageErrors = [];
-    const stills = options.contactSheetOnly ? STILLS.map(([name]) => `${name}.png`) : options.gifsOnly ? [] : await captureStills(browser, options, pageErrors);
-    const sequences = options.contactSheetOnly ? [] : await captureSequences(browser, options, pageErrors);
-    const durationMinimums = { 'adding-evidence': 6, 'changing-prior': 6, 'changing-weight': 6 };
-    const gifValidation = {};
-    if (!options.noEncode) {
-      for (const { name, frames } of sequences) {
-        await encodeGif(options.ffmpegPath, options.outputDir, name);
-        gifValidation[name] = await validateGif(options.ffmpegPath, options.outputDir, name, frames, durationMinimums[name]);
-      }
-    }
-    if (!options.gifsOnly) await captureContactSheet(browser, options, pageErrors);
-    if (pageErrors.length) throw new Error(`The demo raised ${pageErrors.length} uncaught page error(s):\n${pageErrors.join('\n')}`);
-    const manifest = { url: options.url, stills, sequences, gifs: sequences.map(({ name }) => `${name}.gif`), gifValidation, ffmpegPath: options.ffmpegPath };
-    await writeFile(resolve(options.outputDir, 'capture-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-    console.log(`Captured ${stills.length} stills and ${sequences.length} frame sequences in ${options.outputDir}${options.gifsOnly ? '' : ', plus contact-sheet.png'}.`);
+    const pngs = options.gifsOnly ? [] : await capturePngs(browser, options);
+    const gifs = options.pngsOnly ? [] : [
+      await captureChangingPrior(browser, options),
+      await captureInvestigatingPremise(browser, options),
+    ];
+    const pngReports = await Promise.all(pngs.map(async (path) => ({
+      path,
+      size: (await stat(path)).size,
+    })));
+    console.log(JSON.stringify({ pngs: pngReports, gifs }, null, 2));
   } finally {
     await browser.close();
   }
 }
 
-await main();
+main().catch((error) => {
+  console.error(error.stack ?? error.message);
+  process.exitCode = 1;
+});

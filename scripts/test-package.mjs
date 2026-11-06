@@ -8,6 +8,14 @@ import { fileURLToPath } from 'node:url';
 const packageRoot = fileURLToPath(new URL('../', import.meta.url));
 const temporaryDirectory = await mkdtemp(join(tmpdir(), 'evidence-diagrams-package-'));
 const rootManifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+const packageSpecifier = rootManifest.name;
+const mathSpecifier = `${packageSpecifier}/propagation-math`;
+const installedPackageDirectory = join(
+  temporaryDirectory,
+  'consumer',
+  'node_modules',
+  ...packageSpecifier.split('/'),
+);
 
 function run(command, argumentsList, options = {}) {
   return new Promise((resolve, reject) => {
@@ -43,6 +51,14 @@ try {
   const files = archive.files.map(({ path }) => path).sort();
   assert.ok(files.includes('dist/index.js'), 'The archive must contain the JavaScript entry point.');
   assert.ok(files.includes('dist/index.d.ts'), 'The archive must contain TypeScript declarations.');
+  assert.ok(
+    files.includes('dist/propagation-math/index.js'),
+    'The archive must contain the propagation math JavaScript entry point.',
+  );
+  assert.ok(
+    files.includes('dist/propagation-math/index.d.ts'),
+    'The archive must contain propagation math declarations.',
+  );
   assert.ok(files.includes('README.md'), 'The archive must contain the README.');
   assert.ok(files.includes('LICENSE'), 'The archive must contain the license.');
   assert.ok(files.includes('NOTICE'), 'The archive must contain attribution notices.');
@@ -51,6 +67,11 @@ try {
     files.filter((file) => !/^(?:dist\/.+\.(?:js|d\.ts)|README\.md|LICENSE|NOTICE|package\.json)$/.test(file)),
     [],
     'The archive contains a file outside the publication allowlist.',
+  );
+  assert.deepEqual(
+    files.filter((file) => /(?:^|\/)(?:demo|visualization)(?:\/|$)|\.(?:css|html)$/.test(file)),
+    [],
+    'The archive must not contain demo or rendering assets.',
   );
 
   const consumerDirectory = join(temporaryDirectory, 'consumer');
@@ -72,7 +93,19 @@ try {
   ], { cwd: consumerDirectory });
 
   const source = `import assert from 'node:assert/strict';
-import { aggregateEvidence, buildEvidenceDiagram } from '@bycelium/evidence-diagrams';
+import {
+  DEFAULT_COLOR_OPTIONS,
+  JEFFREYS_THRESHOLDS_DECIBANS,
+  aggregateEvidence,
+  buildEvidenceDiagram,
+  credibilityAxisColor,
+  credibilityBandBackground,
+  evaluateInquiry,
+  evidenceStrengthColor,
+  formatProbabilityDisplay,
+  jeffreysBand,
+} from '${packageSpecifier}';
+import { expectedProbability, gaussianToBand } from '${mathSpecifier}';
 
 assert.deepEqual(aggregateEvidence([{ weightDecibans: 12 }, { weightDecibans: -5 }]), {
   netWeightDecibans: 7,
@@ -83,16 +116,67 @@ assert.equal(
   buildEvidenceDiagram([{ id: 'evidence', weightDecibans: 20 }]).probability.text,
   'Probability ≥ 75 %',
 );
+assert.equal(DEFAULT_COLOR_OPTIONS.saturationThresholdDecibans, 15);
+assert.deepEqual([...JEFFREYS_THRESHOLDS_DECIBANS], [2.5, 5, 10, 15, 20]);
+assert.equal(jeffreysBand({ weightDecibans: 3 }), 'weak');
+assert.deepEqual(formatProbabilityDisplay(0, 'exact'), { value: 50 });
+assert.match(credibilityAxisColor(10), /^#[0-9a-f]{6}$/u);
+assert.match(evidenceStrengthColor({
+  netWeightDecibans: -3,
+  absoluteWeightDecibans: 3,
+  dissonance: 0,
+}), /^#[0-9a-f]{6}$/u);
+assert.ok(credibilityBandBackground({ lower: -5, upper: 5 }, {
+  minimum: -30,
+  maximum: 30,
+}).startsWith('linear-gradient('));
+assert.deepEqual(gaussianToBand({ mean: 0, standardDeviation: 5 }), { lower: -15, upper: 15 });
+assert.ok(Math.abs(expectedProbability({ mean: 10, standardDeviation: 5 }) - 0.8671460895375879) < 1e-12);
+const inquiry = evaluateInquiry({
+  rootClaimId: 'target',
+  claims: [
+    { id: 'target', title: 'Target', description: 'Target scope.', prior: { mean: 0, standardDeviation: 5 } },
+    { id: 'premise', title: 'Premise', prior: { mean: 0, standardDeviation: 0 } },
+  ],
+  contributions: [{ id: 'source', title: 'Source' }],
+  evidence: [{
+    id: 'evidence',
+    contributionId: 'source',
+    premiseClaimId: 'premise',
+    targetClaimId: 'target',
+    impact: { deltaMean: 10, deltaStandardDeviation: -2 },
+  }],
+});
+assert.deepEqual(inquiry.claims.target.posterior, { mean: 5, standardDeviation: 4 });
 `;
   await writeFile(join(consumerDirectory, 'index.mjs'), source);
   await writeFile(join(consumerDirectory, 'index.ts'), `import {
   aggregateEvidence,
+  evaluateInquiry,
+  type Inquiry,
   type EvidenceSummary,
-} from '@bycelium/evidence-diagrams';
+} from '${packageSpecifier}';
+import {
+  applyImpact,
+  type Gaussian,
+  type GaussianImpact,
+} from '${mathSpecifier}';
 
 const summary: EvidenceSummary = aggregateEvidence([{ weightDecibans: 12 }]);
 const expected: number = summary.netWeightDecibans;
 void expected;
+const prior: Gaussian = { mean: 0, standardDeviation: 5 };
+const impact: GaussianImpact = { deltaMean: 10, deltaStandardDeviation: -2 };
+const posterior: Gaussian = applyImpact(prior, impact, 0.5);
+void posterior;
+const inquiry: Inquiry = {
+  rootClaimId: 'target',
+  claims: [{ id: 'target', title: 'Target', description: 'Target scope.', prior }],
+  contributions: [],
+  evidence: [],
+};
+const rootMean: number = evaluateInquiry(inquiry).claims.target!.posterior.mean;
+void rootMean;
 `);
   await run(process.execPath, ['index.mjs'], { cwd: consumerDirectory });
 
@@ -111,15 +195,16 @@ void expected;
   ], { cwd: consumerDirectory });
 
   const installedManifest = JSON.parse(await readFile(
-    join(consumerDirectory, 'node_modules/@bycelium/evidence-diagrams/package.json'),
+    join(installedPackageDirectory, 'package.json'),
     'utf8',
   ));
   assert.equal(installedManifest.name, rootManifest.name);
   assert.equal(installedManifest.version, rootManifest.version);
   assert.equal(installedManifest.license, 'Apache-2.0');
+  assert.ok(installedManifest.exports['./propagation-math']);
   for (const name of ['LICENSE', 'NOTICE']) {
     assert.equal(
-      await readFile(join(consumerDirectory, 'node_modules/@bycelium/evidence-diagrams', name), 'utf8'),
+      await readFile(join(installedPackageDirectory, name), 'utf8'),
       await readFile(join(packageRoot, name), 'utf8'),
       `The installed ${name} must preserve the project notice.`,
     );

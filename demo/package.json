@@ -1,0 +1,13 @@
+{
+  "name": "@bycelium/evidence-diagrams-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node ../scripts/build-demo.mjs",
+    "check": "node ../scripts/build-demo.mjs --check",
+    "test": "node --test src/*.test.js src/**/*.test.js"
+  },
+  "dependencies": {
+    "@bycelium/evidence-diagrams": "workspace:*"
+  }
+}

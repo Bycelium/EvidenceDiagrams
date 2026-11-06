@@ -5,17 +5,20 @@ import { build } from 'esbuild';
 
 const packageDirectory = new URL('../', import.meta.url);
 const demoDirectory = new URL('demo/', packageDirectory);
-const templatePath = new URL('index.template.html', demoDirectory);
-const cssPath = new URL('style.css', demoDirectory);
-const javaScriptPath = new URL('main.js', demoDirectory);
+const sourceDirectory = new URL('src/', demoDirectory);
+const templatePath = new URL('index.template.html', sourceDirectory);
+const cssPath = new URL('styles/app.css', sourceDirectory);
+const javaScriptPath = new URL('main.js', sourceDirectory);
 const faviconPath = new URL('favicon.svg', demoDirectory);
 const outputPath = new URL('index.html', demoDirectory);
 const checkOnly = process.argv.includes('--check');
 
-const cssTag = '<link rel="stylesheet" href="./style.css">';
+const cssTag = '<link rel="stylesheet" href="./styles/app.css">';
 const javaScriptTag = '<script type="module" src="./main.js"></script>';
-const faviconTag = '<link rel="icon" href="./favicon.svg" type="image/svg+xml" sizes="any">';
-const generatedComment = '<!-- Generated from demo/index.template.html, demo/style.css, demo/favicon.svg, demo/main.js, demo/color-legend.js, demo/geometry.js, and demo/diagram-renderer.js by pnpm build:demo. -->\n';
+const faviconTag = '<link rel="icon" href="../favicon.svg" type="image/svg+xml" sizes="any">';
+const pngFaviconPath = 'href="../favicon-96.png"';
+const appleTouchIconPath = 'href="../apple-touch-icon.png"';
+const generatedComment = '<!-- Generated from demo/src/, demo/favicon.svg, and the package sources by pnpm build:demo. -->\n';
 
 function pngDimensions(content) {
   const signature = '89504e470d0a1a0a';
@@ -52,13 +55,16 @@ const [htmlTemplate, css, favicon, license, notice, result] = await Promise.all(
 ]);
 
 await Promise.all([
-  verifyPngAsset(new URL('social-preview.png', demoDirectory), 1200, 630),
   verifyPngAsset(new URL('favicon-96.png', demoDirectory), 96, 96),
   verifyPngAsset(new URL('apple-touch-icon.png', demoDirectory), 180, 180),
 ]);
 
-if (!htmlTemplate.includes(cssTag) || !htmlTemplate.includes(javaScriptTag) || !htmlTemplate.includes(faviconTag)) {
-  throw new Error('The demo template no longer contains the expected asset tags.');
+if (!htmlTemplate.includes(cssTag)
+  || !htmlTemplate.includes(javaScriptTag)
+  || !htmlTemplate.includes(faviconTag)
+  || !htmlTemplate.includes(pngFaviconPath)
+  || !htmlTemplate.includes(appleTouchIconPath)) {
+  throw new Error('The Inquiry demo template no longer contains the expected asset tags.');
 }
 
 const embeddedCss = css.replaceAll(/<\/style/giu, '<\\/style');
@@ -67,7 +73,9 @@ const embeddedFavicon = Buffer.from(favicon).toString('base64');
 const standaloneHtml = htmlTemplate
   .replace(cssTag, () => `<style>\n${embeddedCss}</style>`)
   .replace(javaScriptTag, () => `<script>\n${embeddedJavaScript}</script>`)
-  .replace(faviconTag, () => `<link rel="icon" href="data:image/svg+xml;base64,${embeddedFavicon}" type="image/svg+xml" sizes="any">`);
+  .replace(faviconTag, () => `<link rel="icon" href="data:image/svg+xml;base64,${embeddedFavicon}" type="image/svg+xml" sizes="any">`)
+  .replace(pngFaviconPath, 'href="./favicon-96.png"')
+  .replace(appleTouchIconPath, 'href="./apple-touch-icon.png"');
 const licenseComment = `<!--\n${notice.trim()}\n\n${license.trim()}\n-->\n`;
 const generatedHtml = `${generatedComment}${licenseComment}${standaloneHtml}`;
 
@@ -76,7 +84,6 @@ if (checkOnly) {
   if (committedHtml !== generatedHtml) {
     throw new Error('demo/index.html is out of date. Run pnpm build:demo and commit the generated file.');
   }
-
   console.log('Standalone demo is up to date.');
 } else {
   await writeFile(outputPath, generatedHtml, 'utf8');

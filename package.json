@@ -1,7 +1,7 @@
 {
   "name": "@bycelium/evidence-diagrams",
-  "version": "1.0.0",
-  "description": "Evidence-weight aggregation and visualization in decibans.",
+  "version": "1.1.0",
+  "description": "Evidence weighting, credence, color, and Inquiry graph calculations in decibans.",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -30,6 +30,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./propagation-math": {
+      "types": "./dist/propagation-math/index.d.ts",
+      "import": "./dist/propagation-math/index.js",
+      "default": "./dist/propagation-math/index.js"
     }
   },
   "files": [
@@ -45,10 +50,10 @@
     "build": "node scripts/build.mjs",
     "build:demo-assets": "node scripts/render-demo-assets.mjs",
     "check:demo-assets": "node scripts/render-demo-assets.mjs --check",
-    "build:demo": "pnpm run build && node scripts/build-demo.mjs",
-    "check:demo": "pnpm run build && node scripts/build-demo.mjs --check",
-    "test": "pnpm run build && node --test src/*.test.ts demo/*.test.js",
-    "typecheck": "pnpm run build && tsc --noEmit && pnpm run check:demo",
+    "build:demo": "pnpm run build && pnpm --filter @bycelium/evidence-diagrams-demo build",
+    "check:demo": "pnpm run build && pnpm --filter @bycelium/evidence-diagrams-demo check",
+    "test": "pnpm run build && pnpm --filter @bycelium/propagation-math test && pnpm --filter @bycelium/evidence-diagrams-demo test && node --test src/**/*.test.ts",
+    "typecheck": "pnpm run build && pnpm --filter @bycelium/propagation-math typecheck && tsc --noEmit && pnpm run check:demo",
     "test:package": "pnpm run build && node scripts/test-package.mjs",
     "check": "pnpm run test && pnpm run typecheck && pnpm run test:package",
     "prepare": "npm run build",

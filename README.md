@@ -1,110 +1,94 @@
 # `@bycelium/evidence-diagrams`
 
-Combine evidence, measure dissonance, and explore how prior beliefs change the result.
+Combine sourced arguments, measure dissonance, and see how each premise changes a claim's credibility.
 
 [Open the live demo](https://evidence.bycelium.com) · [Download the standalone demo](https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/demo/index.html)
 
-**Add evidence**
-
-[![Add evidence](https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/adding-evidence.gif)](https://evidence.bycelium.com)
-
-**Change the prior**
-
-[![Change the prior](https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/changing-prior.gif)](https://evidence.bycelium.com)
-
-**Adjust evidence weights**
-
-[![Adjust evidence weights](https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/changing-weight.gif)](https://evidence.bycelium.com)
-
-The demo supports English and French, with editable categories and illustrative weights. The downloaded HTML works offline.
+The demo runs in English and French, supports light and dark themes, and works offline from the downloaded HTML.
 
 ## Demo walkthrough
 
-### No evidence and the color legend
+### 1. Open the claim and its evidence summary
 
-<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/no-evidence.png" width="360" alt="Initial diagram with no evidence, a net weight of zero decibans, and a prior interval.">
+<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/inquiry-overview-light.png" width="860" alt="Inquiry overview with the root claim, current credibility, and combined evidence summary.">
 
-With no evidence, the result is `none (0 dBan)`. The prior band is visible and
-the probability remains indeterminate. The color legend starts with uncertain
-gray along a top edge whose width follows the prior interval. It widens downward
-to red for evidence against, yellow for dissonance, and green for evidence for.
-An exact prior collapses the top edge to a point. A shifted prior can tint the
-result even when no evidence has been added.
+The root card starts with the claim and its current credibility. Open it to reveal **Combined evidence**, which compares accumulated opposition, dissonance, and support.
 
-The diagram places the editable prior and read-only posterior on their own
-probability axes. Expand or collapse the evidence path between them with the
-chevron control. In the expanded view, the full-color ribbon flows downward
-from prior to posterior; the surrounding envelope is shown at half opacity.
-Evidence arrows descend one pixel for every two horizontal pixels, while their
-horizontal positions retain the deciban and probability scale.
+### 2. Expand the diagram
 
-<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/color-legend.png" width="360" alt="Color legend widening from a prior-dependent gray top edge to red at the lower left, yellow at the lower center, and green at the lower right.">
+Open the summary to follow each evidence step from the prior credibility band to the current result. The inner disclosure keeps the two bands visible when its detailed path is closed. After reading the path, drag a prior handle to update the inquiry or use ↺ to restore its starting value.
 
-### Adding and combining evidence
+[![Reveal the inquiry and change its prior](https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/changing-inquiry-prior.gif)](https://evidence.bycelium.com)
 
-<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/add-evidence.png" width="640" alt="Evidence controls and one supporting news report with a weight of plus five decibans.">
+### 3. Inspect evidence and follow its premise
 
-Choose a category, set its supporting or opposing weight, and add it to the
-history. Editing a category control updates its existing evidence entries of the
-same category and direction. The history supports selection and removal.
+<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/evidence-drawer-dark.png" width="960" alt="Evidence drawer with the source, conditional force, premise credibility, and current impact.">
 
-<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/weak-evidence.png" width="360" alt="Gray result for weak supporting evidence that leaves the posterior interval across fifty percent.">
+Select an evidence arrow to see its premise, primary source, conditional force, premise credibility, and current impact. Open the premise card to continue into its own evidence subtree. Once the relationship is clear, its handle edits the conditional force in 1 dBan steps.
 
-Weak evidence can remain gray when the posterior interval crosses 50%.
+[![Open an evidence premise](https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/investigating-premise.gif)](https://evidence.bycelium.com)
 
-| Evidence for | Evidence against |
-|---|---|
-| <img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/positive-agreement.png" width="360" alt="Green result for converging evidence for a claim."> | <img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/negative-agreement.png" width="360" alt="Red result for converging evidence against a claim."> |
-| `+10 +10 +10 = +30 dBan` | `−10 −10 −10 = −30 dBan` |
+### 4. Start another inquiry
 
-These walkthrough examples use adjusted weights. The resultant starts at the conservative prior endpoint and ends at the posterior
-odds used for the displayed probability.
+<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/new-root-dialog.png" width="545" alt="Dialog for creating a new root inquiry with a required claim and description.">
 
-### Conflicting evidence and prior bounds
+Choose **Add a claim** to start an inquiry from a claim and description, then add supporting or opposing evidence with a premise and HTTP(S) source. Switching roots preserves each inquiry while the demo is open. Shared premises and sources stay identifiable across arguments; correlation between distinct arguments is not inferred automatically.
 
-<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/evidence-path.png" width="360" alt="Evidence path for alternating supporting and opposing entries.">
-
-The ribbon retains the cumulative path, so opposing evidence remains visible.
-
-<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/dissonant-evidence.png" width="360" alt="Yellow result for completely dissonant evidence with zero net weight.">
-
-Yellow identifies dissonance: equal and opposing weights cancel in the net
-weight while remaining in the absolute weight.
-
-| Prior interval | Exact prior |
-|---|---|
-| <img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/prior-interval.png" width="360" alt="A positive evidence weight evaluated across a prior interval."> | <img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/exact-prior.png" width="360" alt="The same positive evidence weight evaluated with an exact prior."> |
-
-Move the prior handles or use the keyboard to change each bound. Equal bounds
-form an exact prior while retaining both editable endpoint handles.
-
-## Model
-
-For independent signed evidence weights `wᵢ`, the package calculates:
-
-- `S = Σ wᵢ`, the net weight.
-- `A = Σ |wᵢ|`, the absolute weight.
-- `D = 1 − |S| / A`, the dissonance, with `D = 0` when `A = 0`.
-
-For example, `+9 dBan` and `−1 dBan` produce `S = +8 dBan`, `A = 10 dBan`,
-and `D = 20%`. Decibans are log odds: `+10 dBan` multiplies the odds by ten.
-For probability `p`:
-
-```text
-d = 10 × log10(p / (1 − p))
-p = 1 / (1 + 10^(−d / 10))
-```
-
-A prior interval `[min, max]` is expressed in decibans. Net evidence translates
-it to `[min + S, max + S]`, then each endpoint is converted to probability. The
-conservative probability uses the lower endpoint for positive evidence and the
-upper endpoint for negative evidence. Equal bounds produce an exact probability.
+The live legend follows the selected claim and its prior. Read the [Inquiry model](docs/inquiry.md), [nuclear-demo source audit](docs/nuclear-sources.md), and [dependence proposals](docs/proposals/evidence-dependence.md) for details.
 
 ## Install
 
 ```bash
 pnpm add @bycelium/evidence-diagrams
 ```
+
+<details>
+<summary>Inquiry API</summary>
+
+Each claim has a Gaussian prior in decibans. Each evidence relationship names a source contribution, premise, target, and conditional impact.
+
+```ts
+import { evaluateInquiry, type Inquiry } from '@bycelium/evidence-diagrams';
+
+const inquiry: Inquiry = {
+  rootClaimId: 'nuclear-higher-mortality',
+  claims: [
+    {
+      id: 'nuclear-higher-mortality',
+      title: 'Nuclear is dangerous',
+      description: 'Nuclear electricity causes a high number of deaths.',
+      prior: { mean: 0, standardDeviation: 5 },
+    },
+    {
+      id: 'normalized-comparison',
+      title: 'Nuclear death rates are far below coal and gas',
+      description: 'Published deaths-per-TWh estimates place nuclear far below coal and gas.',
+      prior: { mean: 8, standardDeviation: 2 },
+    },
+  ],
+  contributions: [{
+    id: 'owid-energy-mortality',
+    title: 'Our World in Data: Death rates from energy production per TWh',
+    url: 'https://ourworldindata.org/grapher/death-rates-from-energy-production-per-twh?tab=table',
+  }],
+  evidence: [{
+    id: 'normalized-comparison-effect',
+    contributionId: 'owid-energy-mortality',
+    premiseClaimId: 'normalized-comparison',
+    targetClaimId: 'nuclear-higher-mortality',
+    impact: { deltaMean: -20, deltaStandardDeviation: -0.6 },
+  }],
+};
+
+const result = evaluateInquiry(inquiry, { evidenceOrder: 'weakest-first' });
+result.claims['nuclear-higher-mortality'].posterior; // { mean, standardDeviation }
+result.claims['nuclear-higher-mortality'].probability; // expected logistic probability
+result.claims['nuclear-higher-mortality'].steps; // premise-weighted replay
+```
+
+The default demo prior is `{ mean: 0, standardDeviation: 5 }`. The evaluator recursively computes each premise probability, scales the relationship's conditional impact, and replays those impacts for the target. `weakest-first` orders them by ascending absolute weighted mean shift; ties retain evidence-array order.
+
+</details>
 
 <details>
 <summary>API reference</summary>
@@ -141,9 +125,13 @@ boundProbability(summary).direction; // 'lower'
 | `decibansToProbability({ weightDecibans })` | Converts decibans to probability. |
 | `boundProbability(summary, options?)` | Returns a conservative, exact, or indeterminate probability. |
 | `buildEvidenceDiagram(evidence, options?)` | Returns a render-independent diagram model. |
-| `jeffreysBand({ weightDecibans })` | Returns `none`, `anecdotal`, `moderate`, `strong`, `very strong`, or `decisive`; negative nonzero bands end with ` against`. |
+| `jeffreysBand({ weightDecibans })` | Returns `none`, `anecdotal`, `weak`, `moderate`, `strong`, `very strong`, or `decisive`; negative nonzero bands end with ` against`. |
 | `color`, `triangleColor`, `trianglePosition` | Provide diagram color and triangular-legend values. |
+| `credibilityAxisColor`, `credibilityBandBackground` | Color absolute credibility coordinates and interval bands. |
+| `evidenceStrengthColor` | Color an individual evidence effect against an exact neutral prior. |
 | `DEFAULT_COLOR_OPTIONS` | Provides default color settings. |
+
+The adapted Jeffreys scale classifies `2.5 ≤ |dBan| < 5` as weak; lower nonzero values remain anecdotal.
 
 `EvidenceWeight` has `weightDecibans`. `EvidenceSummary` has
 `netWeightDecibans`, `absoluteWeightDecibans`, and `dissonance`. `Probability`
@@ -160,12 +148,12 @@ strict or conservative comparator when the capped precision reaches 0% or
 `'no-evidence'` or `'dissonant-evidence'`, and English `text`.
 
 The default prior interval is `[-15, +15] dBan`, and the default color
-saturation threshold is `20 dBan`. Full directional color begins when the
-conservative posterior endpoint reaches `±20 dBan`, roughly 99% or 1%. With
-the default priors, that occurs at `±35 dBan` net evidence. The diagram keeps
+saturation threshold is `15 dBan`. Full directional color begins when the
+conservative posterior endpoint reaches `±15 dBan`, roughly 97% or 3%. With
+the default priors, that occurs at `±30 dBan` net evidence. The diagram keeps
 raw decibans in its steps and resultant so a consumer can choose its own
 projection. Its visible axis spans twice the saturation threshold on each side,
-or `±40 dBan` by default.
+or `±30 dBan` by default.
 
 </details>
 
@@ -178,37 +166,22 @@ pnpm build:demo
 pnpm check
 ```
 
-`build:demo` regenerates the standalone `demo/index.html`. To regenerate the
+`build:demo` regenerates the standalone `demo/index.html` page. To regenerate the
 favicon PNGs from their editable SVG source, run `pnpm build:demo-assets`; it
-requires the Inkscape CLI. `scripts/capture-social-preview.mjs` captures the
-real demo result as the social-preview PNG through an explicitly supplied
-Playwright module and optional Chromium binary. `check` runs the project checks and
-consumer installation test. To add a locale, create a dictionary in
-`demo/locales/` and register it in `demo/i18n.js`. To add a category, update
-`demo/category-state.js` and each locale dictionary.
+requires the Inkscape CLI. `check` runs the project checks and consumer installation
+test. To add a locale, create a dictionary in `demo/src/i18n/locales/` and register it
+in `demo/src/i18n/index.js`.
 
-Capture the documentation guide stills, frame sequences, and GIFs into a
-review directory with:
+Capture the README screenshots and animations from the generated demo with:
 
 ```bash
-node scripts/capture-guide-media.mjs \
-  --output-dir /tmp/evidence-guide-final \
-  --playwright-module /path/to/playwright.mjs \
-  --ffmpeg-path /path/to/ffmpeg
+node scripts/capture-guide-media.mjs --output-dir /tmp/evidence-guide \
+  --playwright-module /path/to/@playwright/test/index.mjs --ffmpeg-path /path/to/ffmpeg
 ```
 
-The Playwright module supplies its Chromium headless shell. Review the output
-in `/tmp/evidence-guide-final` before copying selected assets into `images/`.
-Pass `--browser-path /path/to/chromium` to override the bundled browser.
-
-```bash
-node scripts/capture-social-preview.mjs --playwright-module /path/to/playwright.mjs --browser-path /path/to/chromium
-```
-
-For deployment, serve `demo/` as the site root so `index.html`, `robots.txt`,
-`sitemap.xml`, `social-preview.png`, and the favicon PNGs are available at their
-root paths. The generated
-`demo/index.html` remains a self-contained offline demo.
+For deployment, serve `demo/` as the site root so `index.html`,
+`robots.txt`, `sitemap.xml`, and the favicon PNGs are available at their root paths.
+The generated page remains a self-contained offline demo.
 
 </details>
 

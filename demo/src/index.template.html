@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evidence Inquiry | Bycelium</title>
+  <meta id="meta-description" name="description" content="Trace how uncertain premises and their sources affect a claim.">
+  <link rel="canonical" href="https://evidence.bycelium.com/">
+  <meta id="og-title" property="og:title" content="Evidence Inquiry | Bycelium">
+  <meta id="og-description" property="og:description" content="Trace how uncertain premises and their sources affect a claim.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://evidence.bycelium.com/">
+  <meta property="og:site_name" content="Bycelium">
+  <meta name="twitter:card" content="summary">
+  <meta id="twitter-title" name="twitter:title" content="Evidence Inquiry | Bycelium">
+  <meta id="twitter-description" name="twitter:description" content="Trace how uncertain premises and their sources affect a claim.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Evidence Inquiry","url":"https://evidence.bycelium.com/","description":"Trace how uncertain premises and their sources affect a claim.","applicationCategory":"EducationalApplication","operatingSystem":"Any"}</script>
+  <link rel="icon" href="../favicon-96.png" sizes="96x96" type="image/png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="stylesheet" href="./styles/app.css">
+</head>
+<body>
+  <main class="inquiry-page">
+    <header class="introduction inquiry-introduction">
+      <div class="language-control">
+        <button type="button" id="language-menu-button" class="language-menu-button" aria-haspopup="menu" aria-expanded="false" aria-controls="language-menu">
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"></path>
+          </svg>
+          <span id="language-menu-current">English</span>
+        </button>
+        <div id="language-menu" class="language-menu" role="menu" hidden>
+          <button type="button" role="menuitemradio" data-locale="en" lang="en">English</button>
+          <button type="button" role="menuitemradio" data-locale="fr" lang="fr">Français</button>
+        </div>
+      </div>
+      <p class="eyebrow">@bycelium/evidence-diagrams</p>
+    </header>
+    <section id="inquiry-mode" class="inquiry-mode" aria-labelledby="inquiry-title">
+      <header class="inquiry-toolbar">
+        <div>
+          <h1 id="inquiry-title" data-i18n="inquiry.heading">Evidence inquiry</h1>
+        </div>
+        <div class="inquiry-toolbar-actions">
+          <button type="button" id="inquiry-legend-open" aria-controls="inquiry-legend-dialog" aria-expanded="false" data-i18n="palette.open">Legend</button>
+          <button type="button" id="inquiry-reset" data-i18n="action.reset">Reset</button>
+        </div>
+      </header>
+      <section id="inquiry-root-list" class="inquiry-root-list" data-i18n-aria-label="inquiry.rootListLabel" aria-label="Inquiry roots"></section>
+      <nav id="inquiry-breadcrumbs" class="inquiry-breadcrumbs" data-i18n-aria-label="inquiry.breadcrumbLabel" aria-label="Open claim path"></nav>
+      <section id="inquiry-focus" class="inquiry-focus"></section>
+    </section>
+  </main>
+  <dialog id="inquiry-legend-dialog" class="inquiry-legend-dialog" aria-labelledby="inquiry-color-legend-title">
+    <section id="inquiry-color-legend" class="inquiry-color-legend">
+      <div class="inquiry-legend-heading">
+        <h2 id="inquiry-color-legend-title" data-i18n="palette.heading">Combined evidence colors</h2>
+        <button type="button" id="inquiry-legend-close" class="inquiry-legend-close" data-i18n-aria-label="palette.close" aria-label="Close legend">×</button>
+      </div>
+      <canvas id="inquiry-legend-canvas" role="img" data-i18n="palette.canvasFallback" data-i18n-aria-label="palette.canvasAria">Combined evidence colors.</canvas>
+      <label class="inquiry-saturation-control" for="inquiry-saturation-threshold">
+        <span data-i18n="palette.saturation">Evidence needed for full color</span>
+        <strong><output id="inquiry-saturation-threshold-value">15</output> dBan</strong>
+        <input id="inquiry-saturation-threshold" type="range" min="5" max="40" step="1" value="15">
+      </label>
+    </section>
+  </dialog>
+  <dialog id="inquiry-dialog" class="inquiry-dialog" aria-labelledby="inquiry-dialog-title">
+    <form id="inquiry-dialog-form" method="dialog">
+      <div class="inquiry-dialog-heading">
+        <h2 id="inquiry-dialog-title"></h2>
+        <button type="button" id="inquiry-dialog-cancel" class="inquiry-dialog-close" data-i18n-aria-label="inquiry.cancel" aria-label="Cancel">×</button>
+      </div>
+      <div id="inquiry-dialog-body" class="inquiry-dialog-body"></div>
+      <div class="inquiry-dialog-actions">
+        <button type="button" id="inquiry-dialog-cancel-secondary" data-i18n="inquiry.cancel">Cancel</button>
+        <button type="submit" id="inquiry-dialog-submit" class="primary"></button>
+      </div>
+    </form>
+  </dialog>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

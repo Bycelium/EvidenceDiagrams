@@ -1,0 +1,21 @@
+{
+  "name": "@bycelium/propagation-math",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "pnpm run build && node --test src/*.test.ts",
+    "typecheck": "pnpm run build && tsc --noEmit -p tsconfig.json"
+  }
+}
