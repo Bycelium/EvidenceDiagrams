@@ -22,7 +22,7 @@ Open the summary to follow each evidence step from the prior credibility band to
 
 ### 3. Inspect evidence and follow its premise
 
-<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/evidence-drawer-dark.png" width="960" alt="Evidence drawer with the source, conditional force, premise credibility, and current impact.">
+<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/evidence-drawer-light.png" width="960" alt="Evidence drawer in light mode with the source, conditional force, premise credibility, and current impact.">
 
 Select an evidence arrow to see its premise, primary source, conditional force, premise credibility, and current impact. Open the premise card to continue into its own evidence subtree. Once the relationship is clear, its handle edits the conditional force in 1 dBan steps.
 

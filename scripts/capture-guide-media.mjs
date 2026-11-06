@@ -167,7 +167,7 @@ async function capturePngs(browser, options) {
 
   {
     const { page, context, errors } = await createPage(browser, options.url, {
-      viewport: { width: 1280, height: 900 }, colorScheme: 'dark',
+      viewport: { width: 1280, height: 900 }, colorScheme: 'light',
     });
     try {
       await ensureExpanded(
@@ -185,9 +185,9 @@ async function capturePngs(browser, options) {
       await evidence.click();
       await page.locator('#inquiry-evidence-panel[open]').waitFor();
       await settle(page);
-      const path = resolve(options.outputDir, 'evidence-drawer-dark.png');
+      const path = resolve(options.outputDir, 'evidence-drawer-light.png');
       await page.locator('#inquiry-evidence-panel').screenshot({ path });
-      await assertCleanPage(page, errors, 'Dark evidence drawer');
+      await assertCleanPage(page, errors, 'Light evidence drawer');
       output.push(path);
     } finally { await context.close(); }
   }
