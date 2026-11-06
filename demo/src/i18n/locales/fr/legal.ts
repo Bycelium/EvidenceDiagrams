@@ -24,7 +24,7 @@ export const legal: LegalMessages = {
   "privacyInquiryHeading": "Modifications de l’enquête",
   "privacyInquiryBody": "Les affirmations, preuves, informations de source et modifications de crédibilité restent en mémoire dans l’onglet courant du navigateur. L’application ne les enregistre pas et elles disparaissent lorsque la page est rechargée ou fermée.",
   "privacyStorageHeading": "Stockage du navigateur",
-  "privacyStorageBody": "La seule valeur conservée par cette application dans localStorage est la langue choisie, sous la clé evidence-diagrams.locale. Vous pouvez la supprimer en effaçant le stockage de ce site dans le navigateur.",
+  "privacyStorageBody": "Cette application conserve dans localStorage la langue choisie et la préférence de thème. Vous pouvez les supprimer en effaçant le stockage de ce site dans le navigateur.",
   "privacyExternalHeading": "Sources externes et contact",
   "privacyExternalBody": "Ouvrir une source citée envoie une requête au site tiers concerné, qui traite les données selon ses propres règles de confidentialité. Utiliser un lien de courriel ouvre votre service de messagerie. Si vous contactez BYCELIUM SAS, elle reçoit votre adresse électronique et votre message et les utilise pour répondre à votre demande et la gérer.",
   "privacyLogsHeading": "Hébergement et journaux techniques",

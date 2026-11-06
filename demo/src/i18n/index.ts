@@ -11,6 +11,7 @@ import type { BandMessages, StrengthMessages } from '../presentation.ts';
 import type { ClaimDiagramMessages } from '../inquiry/claim-diagram.ts';
 import type { NavigationMessages } from '../inquiry/claim-navigation.ts';
 import type { ActionMessages, PageMessages } from '../main.ts';
+import type { ThemeMessages } from '../components/theme-control.ts';
 
 export interface InquiryMessages {
   readonly page: PageMessages;
@@ -28,6 +29,7 @@ export type LocaleMessages = {
   readonly measure: MeasureMessages;
   readonly palette: PaletteMessages;
   readonly action: ActionMessages;
+  readonly theme: ThemeMessages;
   readonly inquiry: InquiryMessages;
   readonly legal: LegalMessages;
 };

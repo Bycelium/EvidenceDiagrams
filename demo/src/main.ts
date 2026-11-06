@@ -1,4 +1,5 @@
 import { mountLanguageControls, initialLocale } from './components/language-control.ts';
+import { mountThemeControls } from './components/theme-control.ts';
 import { mountLegalInformation } from './components/legal-information.ts';
 import {
   createI18n,
@@ -50,8 +51,10 @@ function applyLocale() {
   translateStaticUi();
   legalInformation.setLocale();
   inquiryUi.setLocale();
+  themeControls.setLocale();
 }
 
 translateStaticUi();
 const inquiryUi = mountInquiryController(i18n);
+const themeControls = mountThemeControls(i18n);
 mountLanguageControls(i18n, { onLocaleChange: applyLocale });
