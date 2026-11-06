@@ -389,19 +389,48 @@ main.inquiry-page { width: min(860px, calc(100% - 1rem)); }
   background: color-mix(in srgb, var(--result-color, #9ca3af) 20%, white);
   box-shadow: inset 0 -2px var(--result-color, #9ca3af);
 }
+.has-evidence-preview { position: relative; isolation: isolate; overflow: hidden; }
+.has-evidence-preview > :not(.inquiry-claim-evidence-preview) { position: relative; z-index: 1; }
+.inquiry-claim-evidence-preview {
+  position: absolute;
+  z-index: 0;
+  inset: 0 .35rem 0 30%;
+  display: block;
+  width: calc(70% - .7rem);
+  height: 100%;
+  opacity: .2;
+  pointer-events: none;
+}
+.inquiry-claim-evidence-preview-band.is-support { fill: #86efac; }
+.inquiry-claim-evidence-preview-band.is-opposition { fill: #fca5a5; }
+.inquiry-claim-evidence-preview-band.is-neutral { fill: #cbd5e1; }
+.inquiry-claim-evidence-preview-segment { stroke-width: 2.2; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.inquiry-claim-evidence-preview-segment.is-support { stroke: #15803d; }
+.inquiry-claim-evidence-preview-segment.is-opposition { stroke: #dc2626; }
+.inquiry-claim-evidence-preview-head.is-support { fill: #15803d; }
+.inquiry-claim-evidence-preview-head.is-opposition { fill: #dc2626; }
 
 .inquiry-breadcrumbs[hidden] { display: none; }
-.inquiry-breadcrumbs { min-width: 0; margin: 0 0 .25rem; }
-.inquiry-breadcrumbs ol { display: grid; gap: .12rem; margin: 0; padding: 0; list-style: none; }
-.inquiry-breadcrumbs li { position: relative; min-width: 0; padding-left: 1.1rem; }
-.inquiry-breadcrumbs li::before { position: absolute; z-index: 1; top: 1.25rem; left: .25rem; width: .38rem; height: .38rem; border: 1px solid #64748b; border-radius: 50%; background: #fff; content: ''; transform: translateY(-50%); }
-.inquiry-breadcrumbs li::after { position: absolute; top: 1.25rem; bottom: -1.37rem; left: .43rem; border-left: 1px solid #94a3b8; content: ''; }
-.inquiry-ancestor-link { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: 100%; min-height: 2.5rem; gap: .55rem; padding: .35rem .5rem; border: 0; border-radius: 6px; color: #1f3147; background: color-mix(in srgb, var(--result-color, #9ca3af) 8%, transparent); text-align: left; }
-.inquiry-ancestor-link:hover { background: color-mix(in srgb, var(--result-color, #9ca3af) 16%, white); }
+.inquiry-breadcrumbs { min-width: 0; margin: 0 0 .45rem; }
+.inquiry-breadcrumbs ol { display: grid; gap: .3rem; margin: 0; padding: 0; list-style: none; }
+.inquiry-breadcrumbs li { position: relative; min-width: 0; padding-left: 1.4rem; }
+.inquiry-breadcrumbs li::before { position: absolute; z-index: 1; top: 1.5rem; left: .32rem; width: .5rem; height: .5rem; border: 2px solid #64748b; border-radius: 50%; background: #fff; content: ''; transform: translateY(-50%); }
+.inquiry-breadcrumbs li::after { position: absolute; top: 1.5rem; bottom: -1.82rem; left: .63rem; border-left: 2px solid #94a3b8; content: ''; }
+.inquiry-ancestor-link { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: 100%; min-height: 3rem; gap: .75rem; padding: .55rem .7rem; border: 1px solid color-mix(in srgb, var(--result-color, #9ca3af) 22%, #cbd5e1); border-radius: 8px; color: #1f3147; background: color-mix(in srgb, var(--result-color, #9ca3af) 8%, #fff); box-shadow: 0 1px 2px rgb(15 23 42 / 7%); text-align: left; }
+.inquiry-ancestor-link:hover { border-color: color-mix(in srgb, var(--result-color, #9ca3af) 38%, #94a3b8); background: color-mix(in srgb, var(--result-color, #9ca3af) 16%, white); }
 .inquiry-ancestor-link:focus-visible { outline: 2px solid #334155; outline-offset: -2px; }
-.inquiry-ancestor-title { min-width: 0; overflow-wrap: anywhere; font-size: .8rem; font-weight: 750; line-height: 1.25; }
+.inquiry-ancestor-title { min-width: 0; overflow-wrap: anywhere; font-size: .95rem; font-weight: 780; line-height: 1.3; }
 .inquiry-ancestor-link .inquiry-current-label { display: none; }
 .inquiry-ancestor-link .inquiry-current-credibility { justify-self: end; }
+
+@media (max-width: 520px) {
+  .inquiry-breadcrumbs ol { gap: .22rem; }
+  .inquiry-breadcrumbs li { padding-left: 1.15rem; }
+  .inquiry-breadcrumbs li::before { left: .2rem; }
+  .inquiry-breadcrumbs li::after { left: .51rem; bottom: -1.72rem; }
+  .inquiry-ancestor-link { min-height: 2.75rem; gap: .5rem; padding: .48rem .55rem; }
+  .inquiry-ancestor-title { font-size: .87rem; }
+}
 
 .inquiry-focus { overflow: hidden; }
 .inquiry-focus-heading { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; width: 100%; gap: .7rem; padding: .8rem .9rem .7rem; border: 0; border-bottom: 1px solid rgb(15 23 42 / 24%); border-radius: 0; color: #0f172a; text-align: left; cursor: pointer; }
@@ -596,6 +625,13 @@ button.is-danger { color: #8b2635; }
 .inquiry-dialog-close { min-width: 2.3rem; padding: 0; font-size: 1.25rem; }
 .inquiry-dialog-body { display: grid; min-width: 0; gap: 0; padding: 0 1rem; overflow: auto; }
 .inquiry-dialog-actions { position: relative; z-index: 2; justify-content: flex-end; border-top: 1px solid #d5dde7; background: #f8fafc; }
+.inquiry-session-notice { width: min(29rem, calc(100% - 1rem)); }
+.inquiry-session-notice .inquiry-dialog-body { display: grid; gap: .8rem; padding-block: 1rem; }
+.inquiry-session-notice .inquiry-dialog-body p { margin: 0; color: #42556a; line-height: 1.5; }
+.inquiry-session-notice .inquiry-session-notice-acknowledgment { display: flex; align-items: flex-start; gap: .55rem; color: #1f3147; font-size: .9rem; font-weight: 700; line-height: 1.4; }
+.inquiry-session-notice .inquiry-session-notice-acknowledgment input { flex: 0 0 1rem; width: 1rem; min-height: 1rem; height: 1rem; margin: .15rem 0 0; padding: 0; border: 0; border-radius: 0; appearance: auto; }
+.inquiry-session-notice-contact { font-size: .9rem; }
+.inquiry-session-notice-contact a { color: #1d4ed8; font-weight: 700; overflow-wrap: anywhere; }
 .inquiry-add-section { display: grid; min-width: 0; gap: .55rem; padding: .8rem 0; }
 .inquiry-add-section + .inquiry-add-section { border-top: 1px solid #d5dde7; }
 .inquiry-add-section h3 { margin: 0; color: #1f3147; font-size: .92rem; }
@@ -1052,6 +1088,9 @@ button.is-danger { color: #8b2635; }
   .inquiry-evidence-panel-actions { background: #202327; }
   .inquiry-dialog-body label,
   .inquiry-saturation-control { color: #b7bdc5; }
+  .inquiry-session-notice .inquiry-dialog-body p { color: #c3cad2; }
+  .inquiry-session-notice .inquiry-session-notice-acknowledgment { color: #d7dbe0; }
+  .inquiry-session-notice-contact a { color: #93c5fd; }
   .inquiry-dialog-body input,
   .inquiry-dialog-body select,
   .inquiry-dialog-body textarea { border-color: #535b65; color: #eef0f2; background: #14171b; }
@@ -1063,14 +1102,22 @@ button.is-danger { color: #8b2635; }
     color: #f8fafc;
     background: color-mix(in srgb, var(--result-color, #9ca3af) 14%, #202327);
   }
+  .inquiry-claim-evidence-preview { opacity: .24; }
+  .inquiry-claim-evidence-preview-band.is-support { fill: #166534; }
+  .inquiry-claim-evidence-preview-band.is-opposition { fill: #991b1b; }
+  .inquiry-claim-evidence-preview-band.is-neutral { fill: #475569; }
+  .inquiry-claim-evidence-preview-segment.is-support { stroke: #4ade80; }
+  .inquiry-claim-evidence-preview-segment.is-opposition { stroke: #f87171; }
+  .inquiry-claim-evidence-preview-head.is-support { fill: #4ade80; }
+  .inquiry-claim-evidence-preview-head.is-opposition { fill: #f87171; }
   .inquiry-focus-heading { border-color: #3e454e; color: #f8fafc; }
   .inquiry-focus-heading:hover { background: color-mix(in srgb, var(--result-color, #9ca3af) 19%, #202327); }
   .inquiry-focus-heading:focus-visible,
   .inquiry-ancestor-link:focus-visible { outline-color: #93c5fd; }
   .inquiry-breadcrumbs li::before { border-color: #94a3b8; background: #17191c; }
   .inquiry-breadcrumbs li::after { border-color: #64748b; }
-  .inquiry-ancestor-link { color: #dfe3e8; background: color-mix(in srgb, var(--result-color, #9ca3af) 7%, transparent); }
-  .inquiry-ancestor-link:hover { background: color-mix(in srgb, var(--result-color, #9ca3af) 12%, #24282e); }
+  .inquiry-ancestor-link { border-color: color-mix(in srgb, var(--result-color, #9ca3af) 22%, #515a65); color: #e7ebef; background: color-mix(in srgb, var(--result-color, #9ca3af) 9%, #202327); box-shadow: 0 1px 3px rgb(0 0 0 / 25%); }
+  .inquiry-ancestor-link:hover { border-color: color-mix(in srgb, var(--result-color, #9ca3af) 38%, #6b7280); background: color-mix(in srgb, var(--result-color, #9ca3af) 14%, #24282e); }
   .inquiry-claim-summary { background: #202327; }
 
   .collapsed-evidence-summary { border-color: transparent; background: transparent; }
@@ -1210,4 +1257,130 @@ button.is-danger { color: #8b2635; }
 
 @media (prefers-color-scheme: dark) and (min-width: 900px) {
   .inquiry-evidence-panel-body { background: #3e454e; }
+}
+
+.inquiry-legal-footer {
+  width: min(760px, calc(100% - 1rem));
+  margin: 0 auto;
+  padding: 0 0 1.5rem;
+  color: #64748b;
+  font-size: .78rem;
+  text-align: center;
+}
+
+.inquiry-legal-footer nav,
+.inquiry-legal-notice-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+}
+
+.inquiry-legal-footer button,
+.inquiry-legal-notice-links button {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  color: #315a83;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: .14em;
+  background: transparent;
+}
+
+.inquiry-legal-footer button:hover,
+.inquiry-legal-notice-links button:hover { color: #173c62; background: transparent; }
+.inquiry-legal-footer a { color: #315a83; font-weight: 700; }
+
+.inquiry-legal-notice-links {
+  justify-content: flex-start;
+  color: #42556a;
+  font-size: .9rem;
+}
+
+.inquiry-legal-dialog {
+  width: min(44rem, calc(100% - 1rem));
+  max-height: min(88dvh, 50rem);
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #c7d0db;
+  border-radius: 1rem;
+  color: #172033;
+  background: #fff;
+  box-shadow: 0 1.2rem 3rem rgb(15 23 42 / 28%);
+}
+
+.inquiry-legal-dialog::backdrop { background: rgb(15 23 42 / 48%); }
+
+.inquiry-legal-heading {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .85rem 1rem;
+  border-bottom: 1px solid #d7dee7;
+  background: #fff;
+}
+
+.inquiry-legal-heading h2 { line-height: 1.2; }
+
+.inquiry-legal-close {
+  flex: 0 0 auto;
+  width: 2.4rem;
+  min-height: 2.4rem;
+  padding: 0;
+  border-color: #c7d0db;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.inquiry-legal-tabs {
+  display: flex;
+  gap: .5rem;
+  padding: .75rem 1rem 0;
+}
+
+.inquiry-legal-tab[aria-pressed="true"] {
+  border-color: #315a83;
+  color: #fff;
+  background: #315a83;
+}
+
+.inquiry-legal-article { padding: .85rem 1rem 1rem; }
+.inquiry-legal-article section + section { margin-top: 1.05rem; }
+.inquiry-legal-article h3 { margin: 0 0 .25rem; font-size: 1rem; }
+.inquiry-legal-article p { margin-bottom: .5rem; color: #42556a; }
+.inquiry-legal-article .inquiry-legal-lead { color: #273d55; font-weight: 700; }
+
+.inquiry-legal-dialog-footer {
+  padding: .8rem 1rem;
+  border-top: 1px solid #d7dee7;
+  background: #f7f9fc;
+}
+
+.inquiry-legal-contacts { margin: 0; color: #42556a; font-size: .9rem; }
+.inquiry-legal-dialog a { color: #1d4ed8; overflow-wrap: anywhere; }
+
+@media (prefers-color-scheme: dark) {
+  .inquiry-legal-footer { color: #94a3b8; }
+  .inquiry-legal-footer button,
+  .inquiry-legal-notice-links button,
+  .inquiry-legal-footer a { color: #93c5fd; }
+  .inquiry-legal-footer button:hover,
+  .inquiry-legal-notice-links button:hover { color: #bfdbfe; }
+  .inquiry-legal-notice-links { color: #c3cad2; }
+  .inquiry-legal-dialog { border-color: #535b65; color: #f1f5f9; background: #202327; }
+  .inquiry-legal-heading { border-color: #3e454e; background: #202327; }
+  .inquiry-legal-close { border-color: #69717b; color: #f1f5f9; background: #292e35; }
+  .inquiry-legal-tab[aria-pressed="true"] { border-color: #93c5fd; color: #111827; background: #93c5fd; }
+  .inquiry-legal-article p,
+  .inquiry-legal-contacts { color: #c3cad2; }
+  .inquiry-legal-article .inquiry-legal-lead { color: #e2e8f0; }
+  .inquiry-legal-dialog-footer { border-color: #3e454e; background: #181b1f; }
+  .inquiry-legal-dialog a { color: #93c5fd; }
 }

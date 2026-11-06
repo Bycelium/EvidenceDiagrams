@@ -1,6 +1,6 @@
 {
   "name": "@bycelium/evidence-diagrams",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Evidence weighting, credence, color, and Inquiry graph calculations in decibans.",
   "type": "module",
   "license": "Apache-2.0",

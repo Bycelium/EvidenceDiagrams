@@ -20,7 +20,7 @@ Options:
   --browser-path <path>       Chromium executable path
   --url <url>                 Demo URL (default: ${DEFAULT_URL})
   --gifs-only                 Capture only the two animated walkthroughs
-  --pngs-only                 Capture only the three still images
+  --pngs-only                 Capture only the four still images
   --headed                    Show Chromium while capturing
   --help                      Show this message
 `;
@@ -96,6 +96,12 @@ async function createPage(browser, url, options = {}) {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.stack ?? error.message));
   await page.goto(url, { waitUntil: 'load' });
+  const sessionNoticeAcknowledge = page.locator('#inquiry-session-notice-acknowledge');
+  const sessionNoticeDismiss = page.locator('#inquiry-session-notice-dismiss');
+  await sessionNoticeDismiss.waitFor({ state: 'visible' });
+  await sessionNoticeAcknowledge.check();
+  await sessionNoticeDismiss.click();
+  await page.locator('#inquiry-session-notice').waitFor({ state: 'hidden' });
   await page.locator('.inquiry-focus-heading').waitFor();
   await settle(page);
   return { page, context, errors };
@@ -167,6 +173,19 @@ async function capturePngs(browser, options) {
 
   {
     const { page, context, errors } = await createPage(browser, options.url, {
+      viewport: { width: 1280, height: 900 },
+    });
+    try {
+      await prepareGraph(page);
+      const path = resolve(options.outputDir, 'inquiry-diagram-light.png');
+      await page.locator('.inquiry-focus').screenshot({ path });
+      await assertCleanPage(page, errors, 'Expanded inquiry diagram');
+      output.push(path);
+    } finally { await context.close(); }
+  }
+
+  {
+    const { page, context, errors } = await createPage(browser, options.url, {
       viewport: { width: 1280, height: 900 }, colorScheme: 'light',
     });
     try {
@@ -197,12 +216,26 @@ async function capturePngs(browser, options) {
       viewport: { width: 1080, height: 760 },
     });
     try {
-      await page.locator('#inquiry-root-list [data-action="add-root"]').click();
-      const dialog = page.locator('#inquiry-dialog[open]');
-      await dialog.waitFor();
-      const path = resolve(options.outputDir, 'new-root-dialog.png');
-      await dialog.screenshot({ path });
-      await assertCleanPage(page, errors, 'New root dialog');
+      const addRoot = page.locator('#inquiry-root-list [data-action="add-root"]');
+      await addRoot.hover();
+      const path = resolve(options.outputDir, 'add-claim-light.png');
+      const clip = await page.evaluate(() => {
+        const main = document.querySelector('main');
+        const focus = document.querySelector('.inquiry-focus');
+        if (!(main instanceof HTMLElement) || !(focus instanceof HTMLElement)) {
+          throw new Error('The Add a claim capture requires main and .inquiry-focus.');
+        }
+        const mainBounds = main.getBoundingClientRect();
+        const focusBounds = focus.getBoundingClientRect();
+        return {
+          x: mainBounds.left,
+          y: mainBounds.top,
+          width: mainBounds.width,
+          height: focusBounds.bottom + 16 - mainBounds.top,
+        };
+      });
+      await page.screenshot({ path, clip });
+      await assertCleanPage(page, errors, 'Add a claim action');
       output.push(path);
     } finally { await context.close(); }
   }
@@ -230,7 +263,7 @@ async function encodeGif(ffmpegPath, frameDirectory, outputPath) {
     '-y', '-framerate', String(FRAME_RATE),
     '-i', resolve(frameDirectory, 'frame-%04d.png'),
     '-filter_complex', "fps=10,scale='min(960,iw)':-2:flags=lanczos,split[a][b];[a]palettegen=max_colors=72:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle",
-    '-loop', '0', outputPath,
+    '-fps_mode', 'passthrough', '-loop', '0', outputPath,
   ]);
 }
 
@@ -267,7 +300,7 @@ async function captureChangingPrior(browser, options) {
 
     const handle = page.locator('.prior-handle-max');
     const box = await handle.boundingBox();
-    if (!box) throw new Error('The lower prior handle is not visible.');
+    if (!box) throw new Error('The upper prior handle is not visible.');
     const startX = box.x + box.width / 2;
     const startY = box.y + box.height / 2;
     await page.mouse.move(startX, startY);
@@ -290,34 +323,64 @@ async function captureChangingPrior(browser, options) {
   } finally { await context.close(); }
 }
 
-async function captureInvestigatingPremise(browser, options) {
+async function captureAdjustingEvidenceStrength(browser, options) {
   const { page, context, errors } = await createPage(browser, options.url, {
-    viewport: { width: 960, height: 720 },
+    viewport: { width: 1280, height: 900 },
   });
-  const frames = resolve(options.outputDir, '.frames-investigating-premise');
-  const output = resolve(options.outputDir, 'investigating-premise.gif');
+  const frames = resolve(options.outputDir, '.frames-adjusting-evidence-strength');
+  const output = resolve(options.outputDir, 'adjusting-evidence-strength.gif');
   try {
     await prepareGraph(page);
-    const evidence = page.locator('.inquiry-flow-label-button').first();
+    const evidence = page.locator(
+      '[data-evidence-id="nuclear.e-renewables-root"] .inquiry-flow-label-button',
+    );
     await evidence.scrollIntoViewIfNeeded();
+    await evidence.click();
+    const panel = page.locator('#inquiry-evidence-panel[open]');
+    await panel.waitFor();
+    await settle(page);
     const writer = await createFrameWriter(page, frames, page);
     await writer.capture(18);
 
-    await evidence.click();
-    await page.locator('#inquiry-evidence-panel[open]').waitFor();
+    const input = panel.locator('.inquiry-conditional-strength-input');
+    const box = await input.boundingBox();
+    if (!box) throw new Error('The conditional strength handle is not visible.');
+    const range = await input.evaluate((element) => ({
+      minimum: Number(element.min),
+      maximum: Number(element.max),
+      value: Number(element.value),
+    }));
+    const availableRight = range.maximum - range.value;
+    const direction = availableRight >= 12 ? 1 : -1;
+    const steps = Math.min(12, direction > 0 ? availableRight : range.value - range.minimum);
+    const trackInset = Math.min(12, box.width / 4);
+    const trackWidth = Math.max(1, box.width - 2 * trackInset);
+    const startX = box.x + trackInset
+      + (range.value - range.minimum) / (range.maximum - range.minimum) * trackWidth;
+    const startY = box.y + box.height / 2;
+    const pixelsPerDeciban = trackWidth / (range.maximum - range.minimum);
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    for (let step = 1; step <= steps; step += 1) {
+      await page.mouse.move(startX + direction * step * pixelsPerDeciban, startY);
+      await settle(page);
+      const value = Number(await input.inputValue());
+      if (!Number.isInteger(value)) throw new Error(`Conditional strength did not snap to 1 dBan: ${value}.`);
+      await writer.capture(3);
+    }
+    await page.mouse.up();
     await settle(page);
-    await writer.capture(28);
+    const changedValue = Number(await input.inputValue());
+    if (Math.abs(changedValue - range.value) < 8) {
+      throw new Error(`Conditional strength moved by only ${changedValue - range.value} dBan.`);
+    }
+    await writer.capture(18);
 
-    const premise = page.locator('.inquiry-evidence-panel-premise-link');
-    await premise.scrollIntoViewIfNeeded();
-    await premise.click();
-    await page.locator('#inquiry-evidence-panel').waitFor({ state: 'hidden' });
-    await page.locator('.inquiry-breadcrumbs:not([hidden])').waitFor();
-    await page.locator('.inquiry-focus-heading').scrollIntoViewIfNeeded();
+    await panel.locator('.inquiry-conditional-strength-reset').click();
     await settle(page);
-    await writer.capture(34);
+    await writer.capture(25);
 
-    await assertCleanPage(page, errors, 'Investigating a premise');
+    await assertCleanPage(page, errors, 'Adjusting evidence strength');
     await encodeGif(options.ffmpegPath, frames, output);
     return validateGif(options.ffmpegPath, output, writer.count());
   } finally { await context.close(); }
@@ -341,7 +404,7 @@ async function main() {
     const pngs = options.gifsOnly ? [] : await capturePngs(browser, options);
     const gifs = options.pngsOnly ? [] : [
       await captureChangingPrior(browser, options),
-      await captureInvestigatingPremise(browser, options),
+      await captureAdjustingEvidenceStrength(browser, options),
     ];
     const pngReports = await Promise.all(pngs.map(async (path) => ({
       path,

@@ -4,8 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "node ../scripts/build-demo.mjs",
-    "check": "node ../scripts/build-demo.mjs --check",
-    "test": "node --test src/*.test.js src/**/*.test.js"
+    "check": "pnpm run typecheck && node ../scripts/build-demo.mjs --check",
+    "test": "node --test src/*.test.ts src/**/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@bycelium/evidence-diagrams": "workspace:*"

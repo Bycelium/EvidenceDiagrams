@@ -1,0 +1,119 @@
+import type { InquiryMessages } from '../../index.ts';
+
+export const inquiry: InquiryMessages = {
+  "page": {
+    "pageTitle": "Enquête sur les preuves | Bycelium",
+    "heading": "Enquête sur les preuves",
+    "intro": "Suivez comment des prémisses incertaines et leurs sources influencent une affirmation.",
+    "temporaryChangesTitle": "Modifications temporaires",
+    "temporaryChangesBody": "Les modifications des affirmations, preuves et crédibilités restent dans cet onglet du navigateur. Elles ne sont ni enregistrées ni partagées. Recharger ou fermer la page réinitialise la démonstration.",
+    "temporaryChangesAcknowledge": "Je comprends qu’aucune donnée de l’enquête n’est enregistrée et qu’elles seront toutes perdues si je recharge la page.",
+    "temporaryChangesContact": "Si vous souhaitez enregistrer vos enquêtes, contactez-nous à",
+    "temporaryChangesDismiss": "J’ai compris"
+  },
+  "navigation": {
+    "breadcrumbLabel": "Chemin des affirmations ouvertes",
+    "addRoot": "Ajouter une affirmation",
+    "rootListLabel": "Affirmations",
+    "openRootNamed": "Ouvrir l’affirmation : {root}"
+  },
+  "claim": {
+    "currentCredibility": "Crédibilité actuelle"
+  },
+  "diagram": {
+    "prior": "Crédibilité a priori",
+    "current": "Crédibilité a posteriori",
+    "trajectoryAria": "Mises à jour par les preuves reliant vers le haut la crédibilité initiale à la crédibilité actuelle",
+    "evidenceDisclosure": "Preuves",
+    "combinedEvidence": "Preuves combinées : {strength}",
+    "hideEvidencePath": "Masquer le chemin des preuves",
+    "showEvidencePath": "Afficher le chemin des preuves",
+    "priorLowerHandle": "Ajuster la borne inférieure de crédibilité initiale",
+    "priorUpperHandle": "Ajuster la borne supérieure de crédibilité initiale",
+    "resetPrior": "Réinitialiser la crédibilité a priori",
+    "evidenceNumber": "Preuve {number}",
+    "addDirectionalEvidence": "Ajouter une preuve en soutien ou en opposition"
+  },
+  "strength": {
+    "combinedNone": "Aucun effet combiné",
+    "strengthSupport": "{strength} en soutien",
+    "strengthOpposition": "{strength} en opposition",
+    "strengthWidth": "Incertitude modifiée",
+    "strengthSupportDetail": "{strength} en soutien ({amount})",
+    "strengthOppositionDetail": "{strength} en opposition ({amount})",
+    "strengthWidthDetail": "Variation de l’incertitude (Δσ {amount})",
+    "strengthNone": "Aucun effet actuel",
+    "noAdditionalEffectShort": "Aucun effet supplémentaire attribué"
+  },
+  "detail": {
+    "evidenceDetails": "Détails de la preuve",
+    "closeEvidenceDetails": "Fermer les détails de la preuve",
+    "basedOn": "En se basant sur",
+    "ifClaimIsTrue": "Si",
+    "currentImpactIntro": "L’impact est donc",
+    "selectedEvidenceImpact": "Impact actuel de cette preuve sur la crédibilité de « {target} »",
+    "credibilityInterval": "comprise entre {lower} et {upper}",
+    "premiseWeightingSentence": "{claim} a une crédibilité {interval}, donc une pondération de {weight}.",
+    "andGivenClaimCredibility": "Sachant que",
+    "butGivenClaimCredibility": "Mais sachant que",
+    "investigateClaimNamed": "Explorer cette affirmation : {claim}",
+    "inspectEvidence": "Examiner {source}",
+    "removeEvidence": "Retirer la preuve"
+  },
+  "conditional": {
+    "thenEvidenceStrength": "Alors, c’est une preuve {strength}",
+    "thenEvidenceNoDirection": "Alors, cette preuve est sans effet directionnel",
+    "conditionalMagnitude": "{strength} ({amount})",
+    "conditionalBand": {
+      "anecdotal": "Anecdotique",
+      "weak": "Faible",
+      "moderate": "Modérée",
+      "strong": "Forte",
+      "very_strong": "Très forte",
+      "decisive": "Décisive"
+    },
+    "conditionalBandSentence": {
+      "anecdotal": "anecdotique",
+      "weak": "faible",
+      "moderate": "modérée",
+      "strong": "forte",
+      "very_strong": "très forte",
+      "decisive": "décisive"
+    },
+    "conditionalRelationOpposition": "en opposition à",
+    "conditionalRelationSupport": "en soutien à",
+    "conditionalRelationNeutral": "sur",
+    "conditionalRelationHeadingOpposition": "En opposition à",
+    "conditionalRelationHeadingSupport": "En soutien à",
+    "conditionalRelationHeadingNeutral": "Sur",
+    "conditionalScaleTick": "{strength}, {amount}",
+    "adaptedJeffreysScale": "Échelle adaptée de Jeffreys",
+    "conditionalStrengthHandle": "Ajuster la force conditionnelle de cette preuve pour « {target} »",
+    "resetConditionalStrength": "Réinitialiser la force conditionnelle",
+    "conditionalOpposition": "Opposition",
+    "conditionalSupport": "Soutien",
+    "directionalStrengthNone": "Aucun effet directionnel (0 dBan)",
+    "ifThisWereTrue": "Impact si c’était vrai"
+  },
+  "form": {
+    "requiredText": "Saisissez du texte qui ne contient pas uniquement des espaces.",
+    "invalidRelationship": "Choisissez une relation qui conserve une enquête valide et sans cycle.",
+    "source": "Source",
+    "sourceReference": "Nom ou référence",
+    "sourceTitle": "Titre de la source",
+    "sourceUrl": "URL de la source",
+    "sourceUrlError": "Saisissez une URL http ou https.",
+    "sourceLocator": "Page, tableau ou repère (facultatif)",
+    "premise": "Prémisse",
+    "newPremise": "Créer une nouvelle prémisse",
+    "premiseAssertion": "Affirmation de la prémisse",
+    "useExistingPremise": "Utiliser une prémisse existante",
+    "premiseDescription": "Description de la prémisse",
+    "addEvidence": "Ajouter une preuve",
+    "editDetails": "Modifier la source",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "rootAssertion": "Affirmation",
+    "rootDescription": "Description"
+  }
+};

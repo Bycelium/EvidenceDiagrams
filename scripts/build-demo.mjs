@@ -8,13 +8,13 @@ const demoDirectory = new URL('demo/', packageDirectory);
 const sourceDirectory = new URL('src/', demoDirectory);
 const templatePath = new URL('index.template.html', sourceDirectory);
 const cssPath = new URL('styles/app.css', sourceDirectory);
-const javaScriptPath = new URL('main.js', sourceDirectory);
+const javaScriptPath = new URL('main.ts', sourceDirectory);
 const faviconPath = new URL('favicon.svg', demoDirectory);
 const outputPath = new URL('index.html', demoDirectory);
 const checkOnly = process.argv.includes('--check');
 
 const cssTag = '<link rel="stylesheet" href="./styles/app.css">';
-const javaScriptTag = '<script type="module" src="./main.js"></script>';
+const javaScriptTag = '<script type="module" src="./main.ts"></script>';
 const faviconTag = '<link rel="icon" href="../favicon.svg" type="image/svg+xml" sizes="any">';
 const pngFaviconPath = 'href="../favicon-96.png"';
 const appleTouchIconPath = 'href="../apple-touch-icon.png"';

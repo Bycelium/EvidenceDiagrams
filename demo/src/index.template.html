@@ -11,9 +11,15 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://evidence.bycelium.com/">
   <meta property="og:site_name" content="Bycelium">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://evidence.bycelium.com/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Evidence Inquiry diagram showing combined evidence and credibility bands.">
+  <meta name="twitter:card" content="summary_large_image">
   <meta id="twitter-title" name="twitter:title" content="Evidence Inquiry | Bycelium">
   <meta id="twitter-description" name="twitter:description" content="Trace how uncertain premises and their sources affect a claim.">
+  <meta name="twitter:image" content="https://evidence.bycelium.com/social-preview.png">
+  <meta name="twitter:image:alt" content="Evidence Inquiry diagram showing combined evidence and credibility bands.">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Evidence Inquiry","url":"https://evidence.bycelium.com/","description":"Trace how uncertain premises and their sources affect a claim.","applicationCategory":"EducationalApplication","operatingSystem":"Any"}</script>
   <link rel="icon" href="../favicon-96.png" sizes="96x96" type="image/png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" sizes="180x180">
@@ -41,15 +47,15 @@
     <section id="inquiry-mode" class="inquiry-mode" aria-labelledby="inquiry-title">
       <header class="inquiry-toolbar">
         <div>
-          <h1 id="inquiry-title" data-i18n="inquiry.heading">Evidence inquiry</h1>
+          <h1 id="inquiry-title" data-i18n="inquiry.page.heading">Evidence inquiry</h1>
         </div>
         <div class="inquiry-toolbar-actions">
           <button type="button" id="inquiry-legend-open" aria-controls="inquiry-legend-dialog" aria-expanded="false" data-i18n="palette.open">Legend</button>
           <button type="button" id="inquiry-reset" data-i18n="action.reset">Reset</button>
         </div>
       </header>
-      <section id="inquiry-root-list" class="inquiry-root-list" data-i18n-aria-label="inquiry.rootListLabel" aria-label="Inquiry roots"></section>
-      <nav id="inquiry-breadcrumbs" class="inquiry-breadcrumbs" data-i18n-aria-label="inquiry.breadcrumbLabel" aria-label="Open claim path"></nav>
+      <section id="inquiry-root-list" class="inquiry-root-list" data-i18n-aria-label="inquiry.navigation.rootListLabel" aria-label="Inquiry roots"></section>
+      <nav id="inquiry-breadcrumbs" class="inquiry-breadcrumbs" data-i18n-aria-label="inquiry.navigation.breadcrumbLabel" aria-label="Open claim path"></nav>
       <section id="inquiry-focus" class="inquiry-focus"></section>
     </section>
   </main>
@@ -71,15 +77,33 @@
     <form id="inquiry-dialog-form" method="dialog">
       <div class="inquiry-dialog-heading">
         <h2 id="inquiry-dialog-title"></h2>
-        <button type="button" id="inquiry-dialog-cancel" class="inquiry-dialog-close" data-i18n-aria-label="inquiry.cancel" aria-label="Cancel">×</button>
+        <button type="button" id="inquiry-dialog-cancel" class="inquiry-dialog-close" data-i18n-aria-label="inquiry.form.cancel" aria-label="Cancel">×</button>
       </div>
       <div id="inquiry-dialog-body" class="inquiry-dialog-body"></div>
       <div class="inquiry-dialog-actions">
-        <button type="button" id="inquiry-dialog-cancel-secondary" data-i18n="inquiry.cancel">Cancel</button>
+        <button type="button" id="inquiry-dialog-cancel-secondary" data-i18n="inquiry.form.cancel">Cancel</button>
         <button type="submit" id="inquiry-dialog-submit" class="primary"></button>
       </div>
     </form>
   </dialog>
-  <script type="module" src="./main.js"></script>
+  <dialog id="inquiry-session-notice" class="inquiry-dialog inquiry-session-notice" aria-labelledby="inquiry-session-notice-title" aria-describedby="inquiry-session-notice-body">
+    <form method="dialog">
+      <div class="inquiry-dialog-heading">
+        <h2 id="inquiry-session-notice-title" data-i18n="inquiry.page.temporaryChangesTitle">Temporary changes</h2>
+      </div>
+      <div class="inquiry-dialog-body">
+        <p id="inquiry-session-notice-body" data-i18n="inquiry.page.temporaryChangesBody">Changes to claims, evidence and credibility stay in this browser tab. They are not saved or shared. Reloading or closing the page resets the demo.</p>
+        <label class="inquiry-session-notice-acknowledgment" for="inquiry-session-notice-acknowledge">
+          <input id="inquiry-session-notice-acknowledge" type="checkbox" required>
+          <span data-i18n="inquiry.page.temporaryChangesAcknowledge">I understand that no inquiry data is stored and all inquiry data will be lost when I reload the page.</span>
+        </label>
+        <p class="inquiry-session-notice-contact"><span data-i18n="inquiry.page.temporaryChangesContact">If you would like to save your inquiries, contact us at</span> <a href="mailto:contact@bycelium.com">contact@bycelium.com</a>.</p>
+      </div>
+      <div class="inquiry-dialog-actions">
+        <button type="submit" id="inquiry-session-notice-dismiss" class="primary" data-i18n="inquiry.page.temporaryChangesDismiss">Got it</button>
+      </div>
+    </form>
+  </dialog>
+  <script type="module" src="./main.ts"></script>
 </body>
 </html>

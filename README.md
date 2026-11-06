@@ -10,29 +10,35 @@ The demo runs in English and French, supports light and dark themes, and works o
 
 ### 1. Open the claim and its evidence summary
 
-<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/inquiry-overview-light.png" width="860" alt="Inquiry overview with the root claim, current credibility, and combined evidence summary.">
+<img src="images/inquiry-overview-light.png" width="860" alt="Inquiry overview with the root claim, current credibility, and combined evidence summary.">
 
 The root card starts with the claim and its current credibility. Open it to reveal **Combined evidence**, which compares accumulated opposition, dissonance, and support.
 
 ### 2. Expand the diagram
 
-Open the summary to follow each evidence step from the prior credibility band to the current result. The inner disclosure keeps the two bands visible when its detailed path is closed. After reading the path, drag a prior handle to update the inquiry or use ↺ to restore its starting value.
+Open the summary to follow every evidence step from the prior credibility band to the current result.
 
-[![Reveal the inquiry and change its prior](https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/changing-inquiry-prior.gif)](https://evidence.bycelium.com)
+<img src="images/inquiry-diagram-light.png" width="860" alt="Expanded inquiry diagram with every evidence row between the prior and current credibility bands.">
 
-### 3. Inspect evidence and follow its premise
+### 3. Change the starting credibility
 
-<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/evidence-drawer-light.png" width="960" alt="Evidence drawer in light mode with the source, conditional force, premise credibility, and current impact.">
+Use the inner chevron to collapse the evidence path while keeping the prior and current credibility bands visible. Drag a prior handle to update the inquiry or use ↺ to restore its starting value.
 
-Select an evidence arrow to see its premise, primary source, conditional force, premise credibility, and current impact. Open the premise card to continue into its own evidence subtree. Once the relationship is clear, its handle edits the conditional force in 1 dBan steps.
+[![Reveal the inquiry and change its prior](images/changing-inquiry-prior.gif)](https://evidence.bycelium.com)
 
-[![Open an evidence premise](https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/investigating-premise.gif)](https://evidence.bycelium.com)
+### 4. Inspect evidence and follow its premise
 
-### 4. Start another inquiry
+<img src="images/evidence-drawer-light.png" width="960" alt="Evidence drawer in light mode with the source, conditional force, premise credibility, and current impact.">
 
-<img src="https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/images/new-root-dialog.png" width="545" alt="Dialog for creating a new root inquiry with a required claim and description.">
+Select an evidence arrow to see its premise, primary source, conditional force, premise credibility, and current impact. Drag the conditional-force handle to edit the relationship in 1 dBan steps and see its current impact update. Open the premise card to continue into its own evidence subtree.
 
-Choose **Add a claim** to start an inquiry from a claim and description, then add supporting or opposing evidence with a premise and HTTP(S) source. Switching roots preserves each inquiry while the demo is open. Shared premises and sources stay identifiable across arguments; correlation between distinct arguments is not inferred automatically.
+[![Adjust an evidence relationship's conditional force](images/adjusting-evidence-strength.gif)](https://evidence.bycelium.com)
+
+### 5. Start another inquiry
+
+<img src="images/add-claim-light.png" width="860" alt="Inquiry page with the Add a claim action above the current root claim.">
+
+Select **Add a claim** above the current root to start an inquiry from a claim and description, then add supporting or opposing evidence with a premise and HTTP(S) source. Switching roots preserves each inquiry while the demo is open. Shared premises and sources stay identifiable across arguments; correlation between distinct arguments is not inferred automatically.
 
 The live legend follows the selected claim and its prior. Read the [Inquiry model](docs/inquiry.md), [nuclear-demo source audit](docs/nuclear-sources.md), and [dependence proposals](docs/proposals/evidence-dependence.md) for details.
 
@@ -169,8 +175,8 @@ pnpm check
 `build:demo` regenerates the standalone `demo/index.html` page. To regenerate the
 favicon PNGs from their editable SVG source, run `pnpm build:demo-assets`; it
 requires the Inkscape CLI. `check` runs the project checks and consumer installation
-test. To add a locale, create a dictionary in `demo/src/i18n/locales/` and register it
-in `demo/src/i18n/index.js`.
+test. To add a locale, implement the consuming features’ typed message domains under
+`demo/src/i18n/locales/`, then register the locale in `demo/src/i18n/index.ts`.
 
 Capture the README screenshots and animations from the generated demo with:
 
