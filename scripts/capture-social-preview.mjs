@@ -68,18 +68,55 @@ try {
     locale: 'en-US',
   });
   const page = await context.newPage();
+  page.setDefaultTimeout(5_000);
   await page.goto(options.url, { waitUntil: 'load' });
+  process.stdout.write('Loaded demo\n');
   await page.locator('#inquiry-session-notice-acknowledge').check();
   await page.locator('#inquiry-session-notice-dismiss').click();
-  const claim = page.locator('.inquiry-focus-heading[data-action="toggle-claim"]');
-  if (await claim.getAttribute('aria-expanded') === 'false') await claim.click();
+  await page.addStyleTag({ content: 'main.inquiry-page { width: calc(100% - 2rem); max-width: none; zoom: 1.15; }' });
+  const root = page.locator('#inquiry-root-list [data-action="add-root"]');
+  await root.click();
+  await page.locator('[name="rootTitle"]').fill('How credible is this claim?');
+  await page.locator('[name="rootDescription"]').fill('A short inquiry that weighs supporting findings and a documented limitation.');
+  await page.locator('#inquiry-dialog-submit').click();
+  process.stdout.write('Added root inquiry\n');
+
+  const addEvidence = page.locator('[data-action="add-evidence"]');
+  const evidence = [
+    ['Quantitative findings support the claim', 'A published finding reports results consistent with the claim.', 'Independent research summary', '20'],
+    ['Independent replication confirms the results', 'A separate study reached a similar conclusion using a different sample.', 'Second study record', '12'],
+    ['A documented limitation challenges the claim', 'The evidence record identifies a limitation that weakens confidence.', 'Methods review', '-10'],
+  ];
+  for (const [title, description, source, strength] of evidence) {
+    await addEvidence.click();
+    await page.locator('[name="premiseTitle"]').fill(title);
+    await page.locator('[name="premiseDescription"]').fill(description);
+    await page.locator('[name="sourceTitle"]').fill(source);
+    await page.locator('[name="sourceUrl"]').fill('https://example.com/evidence');
+    await page.locator('.inquiry-conditional-strength-input').fill(strength);
+    await page.locator('#inquiry-dialog-submit').click();
+  }
+  process.stdout.write('Added evidence\n');
+
+  const focus = page.locator('.inquiry-focus-heading[data-action="toggle-claim"]');
+  if (await focus.getAttribute('aria-expanded') === 'false') await focus.click();
   const graph = page.locator('.inquiry-graph-toggle[data-action="toggle-graph"]');
   if (await graph.getAttribute('aria-expanded') === 'false') await graph.click();
-  const trail = page.locator('.inquiry-trail-toggle[data-action="toggle-trail"]');
-  if (await trail.getAttribute('aria-expanded') === 'true') await trail.click();
+  const trail = page.locator('.inquiry-trail-toggle');
+  if (await trail.getAttribute('aria-expanded') === 'false') await trail.click();
+  await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+  await page.evaluate(() => {
+    const combined = [...document.querySelectorAll('.inquiry-graph-toggle')].find((element) => (
+      element.closest('.inquiry-focus')?.textContent?.includes('How credible is this claim?')
+    ));
+    if (!(combined instanceof HTMLElement)) throw new Error('The new inquiry graph was not rendered.');
+    window.scrollBy(0, combined.getBoundingClientRect().top + 54);
+  });
+  await page.mouse.move(5, 5);
   await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
   await mkdir(dirname(options.outputPath), { recursive: true });
   await page.screenshot({ path: options.outputPath });
+
   const preview = await readFile(options.outputPath);
   const width = preview.readUInt32BE(16);
   const height = preview.readUInt32BE(20);

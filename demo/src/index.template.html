@@ -35,7 +35,7 @@
             <circle cx="12" cy="12" r="9"></circle>
             <path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"></path>
           </svg>
-          <span id="language-menu-current">English</span>
+          <span id="language-menu-current" class="language-menu-current">English</span>
         </button>
         <div id="language-menu" class="language-menu" role="menu" hidden>
           <button type="button" role="menuitemradio" data-locale="en" lang="en">English</button>
@@ -90,6 +90,19 @@
     <form method="dialog">
       <div class="inquiry-dialog-heading">
         <h2 id="inquiry-session-notice-title" data-i18n="inquiry.page.temporaryChangesTitle">Temporary changes</h2>
+        <div class="language-control inquiry-session-notice-language">
+          <button type="button" id="notice-language-menu-button" class="language-menu-button" aria-haspopup="menu" aria-expanded="false" aria-controls="notice-language-menu">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"></path>
+            </svg>
+            <span class="language-menu-current">English</span>
+          </button>
+          <div id="notice-language-menu" class="language-menu" role="menu" hidden>
+            <button type="button" role="menuitemradio" data-locale="en" lang="en">English</button>
+            <button type="button" role="menuitemradio" data-locale="fr" lang="fr">Français</button>
+          </div>
+        </div>
       </div>
       <div class="inquiry-dialog-body">
         <p id="inquiry-session-notice-body" data-i18n="inquiry.page.temporaryChangesBody">Changes to claims, evidence and credibility stay in this browser tab. They are not saved or shared. Reloading or closing the page resets the demo.</p>

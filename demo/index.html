@@ -421,7 +421,8 @@ textarea:focus-visible {
   justify-content: space-between;
   max-width: none;
 }
-.inquiry-introduction .language-control { position: relative; order: 2; margin-left: 1rem; }
+.language-control { position: relative; }
+.inquiry-introduction .language-control { order: 2; margin-left: 1rem; }
 .language-menu-button { display: inline-flex; align-items: center; gap: .3rem; min-height: 2rem; padding: .25rem .45rem; border: 1px solid #cbd5e1; border-radius: 999px; color: #1f3147; background: #fff; font-weight: 800; }
 .language-menu-button svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.7; }
 .language-menu { position: absolute; z-index: 20; top: calc(100% + .25rem); right: 0; display: grid; min-width: 5rem; padding: .25rem; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; box-shadow: 0 8px 18px rgb(15 23 42 / 16%); }
@@ -862,12 +863,19 @@ button.is-danger { color: #8b2635; }
 .inquiry-dialog-body { display: grid; min-width: 0; gap: 0; padding: 0 1rem; overflow: auto; }
 .inquiry-dialog-actions { position: relative; z-index: 2; justify-content: flex-end; border-top: 1px solid #d5dde7; background: #f8fafc; }
 .inquiry-session-notice { width: min(29rem, calc(100% - 1rem)); }
+.inquiry-session-notice .inquiry-dialog-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.inquiry-session-notice .inquiry-dialog-heading h2 { min-width: 0; }
+.inquiry-session-notice-language { justify-self: end; }
 .inquiry-session-notice .inquiry-dialog-body { display: grid; gap: .8rem; padding-block: 1rem; }
 .inquiry-session-notice .inquiry-dialog-body p { margin: 0; color: #42556a; line-height: 1.5; }
 .inquiry-session-notice .inquiry-session-notice-acknowledgment { display: flex; align-items: flex-start; gap: .55rem; color: #1f3147; font-size: .9rem; font-weight: 700; line-height: 1.4; }
 .inquiry-session-notice .inquiry-session-notice-acknowledgment input { flex: 0 0 1rem; width: 1rem; min-height: 1rem; height: 1rem; margin: .15rem 0 0; padding: 0; border: 0; border-radius: 0; appearance: auto; }
 .inquiry-session-notice-contact { font-size: .9rem; }
 .inquiry-session-notice-contact a { color: #1d4ed8; font-weight: 700; overflow-wrap: anywhere; }
+@media (max-width: 360px) {
+  .inquiry-session-notice .inquiry-dialog-heading { grid-template-columns: minmax(0, 1fr); }
+  .inquiry-session-notice-language { margin-top: .25rem; }
+}
 .inquiry-add-section { display: grid; min-width: 0; gap: .55rem; padding: .8rem 0; }
 .inquiry-add-section + .inquiry-add-section { border-top: 1px solid #d5dde7; }
 .inquiry-add-section h3 { margin: 0; color: #1f3147; font-size: .92rem; }
@@ -1631,7 +1639,7 @@ button.is-danger { color: #8b2635; }
             <circle cx="12" cy="12" r="9"></circle>
             <path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"></path>
           </svg>
-          <span id="language-menu-current">English</span>
+          <span id="language-menu-current" class="language-menu-current">English</span>
         </button>
         <div id="language-menu" class="language-menu" role="menu" hidden>
           <button type="button" role="menuitemradio" data-locale="en" lang="en">English</button>
@@ -1686,6 +1694,19 @@ button.is-danger { color: #8b2635; }
     <form method="dialog">
       <div class="inquiry-dialog-heading">
         <h2 id="inquiry-session-notice-title" data-i18n="inquiry.page.temporaryChangesTitle">Temporary changes</h2>
+        <div class="language-control inquiry-session-notice-language">
+          <button type="button" id="notice-language-menu-button" class="language-menu-button" aria-haspopup="menu" aria-expanded="false" aria-controls="notice-language-menu">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"></path>
+            </svg>
+            <span class="language-menu-current">English</span>
+          </button>
+          <div id="notice-language-menu" class="language-menu" role="menu" hidden>
+            <button type="button" role="menuitemradio" data-locale="en" lang="en">English</button>
+            <button type="button" role="menuitemradio" data-locale="fr" lang="fr">Français</button>
+          </div>
+        </div>
       </div>
       <div class="inquiry-dialog-body">
         <p id="inquiry-session-notice-body" data-i18n="inquiry.page.temporaryChangesBody">Changes to claims, evidence and credibility stay in this browser tab. They are not saved or shared. Reloading or closing the page resets the demo.</p>
@@ -1721,59 +1742,78 @@ button.is-danger { color: #8b2635; }
     const browserLanguages = navigator.languages?.length ? navigator.languages : [navigator.language];
     return resolveInitialLocale2(storedLocale(), browserLanguages);
   }
-  function mountLanguageControl(i18n2, { onLocaleChange }) {
-    const requireElement = (selector) => {
-      const target = document.querySelector(selector);
-      if (!target) throw new Error(`Missing language control element: ${selector}`);
-      return target;
-    };
-    const container = requireElement(".language-control");
-    const button = requireElement("#language-menu-button");
-    const menu = requireElement("#language-menu");
-    const current = requireElement("#language-menu-current");
-    function close({ focus = false } = {}) {
-      menu.hidden = true;
-      button.setAttribute("aria-expanded", "false");
-      if (focus) button.focus();
+  function requiredChild(container, selector) {
+    const target = container.querySelector(selector);
+    if (!target) throw new Error(`Missing language control element: ${selector}`);
+    return target;
+  }
+  function mountLanguageControls(i18n2, { onLocaleChange }) {
+    const controls = [...document.querySelectorAll(".language-control")].map((container) => ({
+      container,
+      button: requiredChild(container, ".language-menu-button"),
+      menu: requiredChild(container, ".language-menu"),
+      current: requiredChild(container, ".language-menu-current")
+    }));
+    if (controls.length === 0) throw new Error("Missing language controls");
+    function close(control, { focus = false } = {}) {
+      control.menu.hidden = true;
+      control.button.setAttribute("aria-expanded", "false");
+      if (focus) control.button.focus();
+    }
+    function synchronize() {
+      for (const control of controls) {
+        control.current.textContent = i18n2.meta.label;
+        for (const option of control.menu.querySelectorAll("[data-locale]")) {
+          option.setAttribute("aria-checked", String(option.dataset.locale === i18n2.locale));
+        }
+      }
     }
     function apply(locale) {
       i18n2.setLocale(locale);
-      const options = menu.querySelectorAll("[data-locale]");
-      for (const option of options) {
-        option.setAttribute("aria-checked", String(option.dataset.locale === i18n2.locale));
-      }
-      current.textContent = menu.querySelector(`[data-locale="${i18n2.locale}"]`)?.textContent ?? i18n2.locale;
+      synchronize();
       storeLocale(i18n2.locale);
       onLocaleChange();
     }
-    button.addEventListener("click", () => {
-      const open = menu.hidden;
-      menu.hidden = !open;
-      button.setAttribute("aria-expanded", String(open));
-      if (open) menu.querySelector(`[data-locale="${i18n2.locale}"]`)?.focus();
-    });
-    menu.addEventListener("click", (event) => {
-      const option = event.target instanceof Element ? event.target.closest("[data-locale]") : null;
-      if (!option) return;
-      if (!option.dataset.locale) return;
-      apply(option.dataset.locale);
-      close({ focus: true });
-    });
-    menu.addEventListener("keydown", (event) => {
-      if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
-      event.preventDefault();
-      const options = [...menu.querySelectorAll("[data-locale]")];
-      const index = options.indexOf(document.activeElement);
-      const offset = event.key === "ArrowDown" ? 1 : -1;
-      options[(index + offset + options.length) % options.length]?.focus();
-    });
+    for (const control of controls) {
+      control.button.addEventListener("click", () => {
+        const open = control.menu.hidden;
+        for (const candidate of controls) close(candidate);
+        control.menu.hidden = !open;
+        control.button.setAttribute("aria-expanded", String(open));
+        if (open) {
+          control.menu.querySelector(`[data-locale="${i18n2.locale}"]`)?.focus();
+        }
+      });
+      control.menu.addEventListener("click", (event) => {
+        const option = event.target instanceof Element ? event.target.closest("[data-locale]") : null;
+        const locale = option?.dataset.locale;
+        if (locale !== "en" && locale !== "fr") return;
+        apply(locale);
+        close(control, { focus: true });
+      });
+      control.menu.addEventListener("keydown", (event) => {
+        if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
+        event.preventDefault();
+        const options = [...control.menu.querySelectorAll("[data-locale]")];
+        const index = options.indexOf(document.activeElement);
+        const offset = event.key === "ArrowDown" ? 1 : -1;
+        options[(index + offset + options.length) % options.length]?.focus();
+      });
+    }
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && !menu.hidden) close({ focus: true });
+      if (event.key !== "Escape") return;
+      for (const control of controls) {
+        if (!control.menu.hidden) close(control, { focus: true });
+      }
     });
     document.addEventListener("pointerdown", (event) => {
-      if (!menu.hidden && event.target instanceof Node && !container.contains(event.target)) close();
+      if (!(event.target instanceof Node)) return;
+      for (const control of controls) {
+        if (!control.menu.hidden && !control.container.contains(event.target)) close(control);
+      }
     });
-    apply(i18n2.locale);
+    synchronize();
+    storeLocale(i18n2.locale);
   }
 
   // demo/src/dom.ts
@@ -6712,7 +6752,7 @@ button.is-danger { color: #8b2635; }
   }
   translateStaticUi();
   var inquiryUi = mountInquiryController(i18n);
-  mountLanguageControl(i18n, { onLocaleChange: applyLocale });
+  mountLanguageControls(i18n, { onLocaleChange: applyLocale });
 })();
 </script>
 </body>
