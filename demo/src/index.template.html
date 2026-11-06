@@ -65,7 +65,13 @@
         <h2 id="inquiry-color-legend-title" data-i18n="palette.heading">Combined evidence colors</h2>
         <button type="button" id="inquiry-legend-close" class="inquiry-legend-close" data-i18n-aria-label="palette.close" aria-label="Close legend">×</button>
       </div>
-      <canvas id="inquiry-legend-canvas" role="img" data-i18n="palette.canvasFallback" data-i18n-aria-label="palette.canvasAria">Combined evidence colors.</canvas>
+      <div class="inquiry-legend-plot">
+        <canvas id="inquiry-legend-canvas" role="img" data-i18n="palette.canvasFallback" data-i18n-aria-label="palette.canvasAria">Combined evidence colors.</canvas>
+        <span class="inquiry-legend-label inquiry-legend-label-uncertain" data-i18n="palette.uncertain">Uncertain</span>
+        <span class="inquiry-legend-label inquiry-legend-label-against" data-i18n="palette.against">Opposes</span>
+        <span class="inquiry-legend-label inquiry-legend-label-dissonance" data-i18n="palette.dissonance">Dissonance</span>
+        <span class="inquiry-legend-label inquiry-legend-label-for" data-i18n="palette.for">Supports</span>
+      </div>
       <label class="inquiry-saturation-control" for="inquiry-saturation-threshold">
         <span data-i18n="palette.saturation">Evidence needed for full color</span>
         <strong><output id="inquiry-saturation-threshold-value">15</output> dBan</strong>

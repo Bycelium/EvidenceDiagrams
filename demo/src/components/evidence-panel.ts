@@ -11,6 +11,7 @@ import {
 } from '@bycelium/evidence-diagrams';
 import { gaussianToBand, type Gaussian } from '@bycelium/evidence-diagrams/propagation-math';
 import { element, safeHttpUrl } from '../dom.ts';
+import { readableMetricColor } from '../color.ts';
 import type { I18n } from '../i18n/index.ts';
 import { formatJeffreysStrength, type StrengthMessages } from '../presentation.ts';
 import { claimEvidenceSummary, renderClaimCredibility, type ClaimCardMessages } from './claim-card.ts';
@@ -89,7 +90,7 @@ function metricValue(text: string, color: string, dataset: Record<string, string
     dataset,
     textContent: text,
   });
-  value.style.setProperty('--metric-color', color);
+  value.style.setProperty('--metric-color', readableMetricColor(color));
   return value;
 }
 

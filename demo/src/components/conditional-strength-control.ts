@@ -2,6 +2,7 @@ import {
   evidenceStrengthColor,
   jeffreysBand,
 } from '@bycelium/evidence-diagrams';
+import { readableMetricColor } from '../color.ts';
 import { element } from '../dom.ts';
 import type { I18n } from '../i18n/index.ts';
 import { signedNumber } from '../presentation.ts';
@@ -108,11 +109,11 @@ function updateMetric(
   });
   const index = formatted.indexOf(token);
   const numeric = element('strong', { className: 'inquiry-evidence-panel-metric-value', textContent: amount });
-  numeric.style.setProperty('--metric-color', evidenceStrengthColor({
+  numeric.style.setProperty('--metric-color', readableMetricColor(evidenceStrengthColor({
     netWeightDecibans: value,
     absoluteWeightDecibans: Math.abs(value),
     dissonance: 0,
-  }, { saturationThresholdDecibans }));
+  }, { saturationThresholdDecibans })));
   metric.replaceChildren(
     document.createTextNode(formatted.slice(0, index)), numeric,
     document.createTextNode(formatted.slice(index + token.length)),

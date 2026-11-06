@@ -69,8 +69,6 @@ export function mountInquiryController(i18n: I18n): { setLocale(): void } {
     openButton: requiredElement('#inquiry-legend-open'),
     container: requiredElement('#inquiry-color-legend'),
     canvas: requiredElement('#inquiry-legend-canvas'),
-    messages: () => i18n.messages.palette,
-    darkModeQuery: window.matchMedia?.('(prefers-color-scheme: dark)'),
   });
   requiredElement<HTMLButtonElement>('#inquiry-legend-close')
     .addEventListener('click', () => legend.setOpen(false));

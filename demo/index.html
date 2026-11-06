@@ -576,7 +576,7 @@ main.inquiry-page { width: min(860px, calc(100% - 1rem)); }
 .inquiry-root-add > button:hover { border-color: #64748b; color: #1f3147; background: #eef3f7; }
 .inquiry-root-add > button:focus-visible { outline: 2px solid #334155; outline-offset: -4px; }
 .inquiry-root-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: 100%; min-height: 2.75rem; gap: .65rem; padding: .45rem .65rem; border: 1px solid #d5dde7; border-radius: 9px; text-align: left; }
-.inquiry-root-card:hover { background: color-mix(in srgb, var(--result-color, #9ca3af) 28%, white); }
+.inquiry-root-card:hover { background: color-mix(in srgb, var(--result-color, #9ca3af) 28%, transparent); }
 .inquiry-root-card:focus-visible { outline: 2px solid #334155; outline-offset: -2px; }
 .inquiry-root-card-title { min-width: 0; overflow-wrap: anywhere; font-size: .88rem; font-weight: 750; line-height: 1.25; }
 .inquiry-root-card .inquiry-current-label { display: none; }
@@ -607,7 +607,13 @@ main.inquiry-page { width: min(860px, calc(100% - 1rem)); }
 .inquiry-saturation-control { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .25rem .65rem; padding-top: .65rem; border-top: 1px solid #d5dde7; color: #526478; font-size: .78rem; font-weight: 750; }
 .inquiry-saturation-control input { grid-column: 1 / -1; width: 100%; min-height: 2.75rem; }
 .inquiry-color-legend { display: grid; gap: .65rem; text-align: center; }
+.inquiry-legend-plot { position: relative; width: fit-content; margin: 0 auto; color: #334155; font: 700 10px system-ui; }
 #inquiry-legend-canvas { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.inquiry-legend-label { position: absolute; pointer-events: none; }
+.inquiry-legend-label-uncertain { top: 0; left: 50%; transform: translateX(-50%); }
+.inquiry-legend-label-against { bottom: 0; left: 0; }
+.inquiry-legend-label-dissonance { bottom: 0; left: 50%; transform: translateX(-50%); }
+.inquiry-legend-label-for { right: 0; bottom: 0; }
 .inquiry-legend-dialog { position: fixed; z-index: 30; inset: max(.5rem, env(safe-area-inset-top)) max(.5rem, env(safe-area-inset-right)) auto auto; width: min(18rem, calc(100vw - 1rem)); max-height: calc(100dvh - 1rem); margin: 0; padding: 0; overflow-y: auto; border: 1px solid #9cabbc; border-radius: 14px; color: #172033; background: #fff; box-shadow: 0 18px 44px rgb(15 23 42 / 28%); }
 .inquiry-legend-dialog .inquiry-color-legend { padding: .8rem 1rem 1rem; }
 .inquiry-legend-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding-bottom: .7rem; border-bottom: 1px solid #d5dde7; }
@@ -623,7 +629,7 @@ main.inquiry-page { width: min(860px, calc(100% - 1rem)); }
 
 .inquiry-claim-card {
   color: #0f172a;
-  background: color-mix(in srgb, var(--result-color, #9ca3af) 20%, white);
+  background: color-mix(in srgb, var(--result-color, #9ca3af) 20%, transparent);
   box-shadow: inset 0 -2px var(--result-color, #9ca3af);
 }
 .has-evidence-preview { position: relative; isolation: isolate; overflow: hidden; }
@@ -653,8 +659,8 @@ main.inquiry-page { width: min(860px, calc(100% - 1rem)); }
 .inquiry-breadcrumbs li { position: relative; min-width: 0; padding-left: 1.4rem; }
 .inquiry-breadcrumbs li::before { position: absolute; z-index: 1; top: 1.5rem; left: .32rem; width: .5rem; height: .5rem; border: 2px solid #64748b; border-radius: 50%; background: #fff; content: ''; transform: translateY(-50%); }
 .inquiry-breadcrumbs li::after { position: absolute; top: 1.5rem; bottom: -1.82rem; left: .63rem; border-left: 2px solid #94a3b8; content: ''; }
-.inquiry-ancestor-link { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: 100%; min-height: 3rem; gap: .75rem; padding: .55rem .7rem; border: 1px solid color-mix(in srgb, var(--result-color, #9ca3af) 22%, #cbd5e1); border-radius: 8px; color: #1f3147; background: color-mix(in srgb, var(--result-color, #9ca3af) 8%, #fff); box-shadow: 0 1px 2px rgb(15 23 42 / 7%); text-align: left; }
-.inquiry-ancestor-link:hover { border-color: color-mix(in srgb, var(--result-color, #9ca3af) 38%, #94a3b8); background: color-mix(in srgb, var(--result-color, #9ca3af) 16%, white); }
+.inquiry-ancestor-link { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: 100%; min-height: 3rem; gap: .75rem; padding: .55rem .7rem; border: 1px solid color-mix(in srgb, var(--result-color, #9ca3af) 22%, #cbd5e1); border-radius: 8px; color: #1f3147; background: color-mix(in srgb, var(--result-color, #9ca3af) 8%, transparent); box-shadow: 0 1px 2px rgb(15 23 42 / 7%); text-align: left; }
+.inquiry-ancestor-link:hover { border-color: color-mix(in srgb, var(--result-color, #9ca3af) 38%, #94a3b8); background: color-mix(in srgb, var(--result-color, #9ca3af) 16%, transparent); }
 .inquiry-ancestor-link:focus-visible { outline: 2px solid #334155; outline-offset: -2px; }
 .inquiry-ancestor-title { min-width: 0; overflow-wrap: anywhere; font-size: .95rem; font-weight: 780; line-height: 1.3; }
 .inquiry-ancestor-link .inquiry-current-label { display: none; }
@@ -671,7 +677,7 @@ main.inquiry-page { width: min(860px, calc(100% - 1rem)); }
 
 .inquiry-focus { overflow: hidden; }
 .inquiry-focus-heading { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; width: 100%; gap: .7rem; padding: .8rem .9rem .7rem; border: 0; border-bottom: 1px solid rgb(15 23 42 / 24%); border-radius: 0; color: #0f172a; text-align: left; cursor: pointer; }
-.inquiry-focus-heading:hover { background: color-mix(in srgb, var(--result-color, #9ca3af) 25%, white); }
+.inquiry-focus-heading:hover { background: color-mix(in srgb, var(--result-color, #9ca3af) 25%, transparent); }
 .inquiry-focus-heading:focus-visible { position: relative; z-index: 2; outline: 2px solid #334155; outline-offset: -3px; }
 .inquiry-claim-toggle-chevron { width: .72rem; height: .72rem; border-right: 2px solid currentcolor; border-bottom: 2px solid currentcolor; transform: rotate(-45deg); transition: transform 120ms ease; }
 .inquiry-focus-heading[aria-expanded="true"] .inquiry-claim-toggle-chevron { transform: rotate(45deg); }
@@ -808,7 +814,7 @@ button.primary:hover { background: #eef3f7; }
 .inquiry-flow-label-button { display: grid; grid-template-rows: auto auto; align-content: center; justify-items: center; gap: .25rem; width: 100%; height: 100%; margin: 0; padding: .25rem .75rem; overflow: visible; border: 0; border-radius: 0; color: #1f3147; background: rgb(255 255 255 / 72%); text-align: center; white-space: normal; pointer-events: auto; transition: background 100ms ease; }
 .inquiry-flow-label-button:hover { background: rgb(255 255 255 / 72%); }
 .inquiry-flow-label-title { width: 100%; max-width: 100%; padding: 0; border: 0; border-radius: 0; background: transparent; overflow-wrap: anywhere; font: 760 1rem/1.25 system-ui, sans-serif; }
-.inquiry-flow-label-strength { display: inline-flex; align-items: center; justify-content: center; width: fit-content; max-width: calc(100% - .5rem); padding: .08rem .4rem; border: 1px solid color-mix(in srgb, var(--effect-color, #9ca3af) 65%, #64748b); border-left: 4px solid var(--effect-color, #9ca3af); border-radius: 999px; color: #0f172a; background: color-mix(in srgb, var(--effect-color, #9ca3af) 22%, white); font: 800 .875rem/1.2 system-ui, sans-serif; letter-spacing: .01em; text-align: center; white-space: normal; }
+.inquiry-flow-label-strength { display: inline-flex; align-items: center; justify-content: center; width: fit-content; max-width: calc(100% - .5rem); padding: .08rem .4rem; border: 1px solid color-mix(in srgb, var(--effect-color, #9ca3af) 65%, #64748b); border-left: 4px solid var(--effect-color, #9ca3af); border-radius: 999px; color: #0f172a; background: color-mix(in srgb, var(--effect-color, #9ca3af) 22%, transparent); font: 800 .875rem/1.2 system-ui, sans-serif; letter-spacing: .01em; text-align: center; white-space: normal; }
 .inquiry-flow-evidence:hover .inquiry-flow-label-button,
 .inquiry-flow-evidence:focus-within .inquiry-flow-label-button,
 .inquiry-flow-evidence.is-hovered .inquiry-flow-label-button,
@@ -823,7 +829,7 @@ button.primary:hover { background: #eef3f7; }
 .inquiry-flow-band.is-prior { stroke: #64748b; }
 .inquiry-flow-point { fill: #334155; }
 
-.inquiry-resultant-strength { padding: .16rem .45rem; border: 1px solid color-mix(in srgb, var(--result-color, #9ca3af) 65%, #64748b); border-left: 4px solid var(--result-color, #9ca3af); border-radius: 999px; color: #0f172a; background: color-mix(in srgb, var(--result-color, #9ca3af) 22%, white); font-size: .86rem; font-weight: 850; }
+.inquiry-resultant-strength { padding: .16rem .45rem; border: 1px solid color-mix(in srgb, var(--result-color, #9ca3af) 65%, #64748b); border-left: 4px solid var(--result-color, #9ca3af); border-radius: 999px; color: #0f172a; background: color-mix(in srgb, var(--result-color, #9ca3af) 22%, transparent); font-size: .86rem; font-weight: 850; }
 .inquiry-resultant-arrow { position: absolute; z-index: 2; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .inquiry-resultant-line { stroke-width: 8; vector-effect: non-scaling-stroke; }
 .inquiry-resultant-line.is-support, .inquiry-resultant-head.is-support { stroke: #15803d; fill: #15803d; }
@@ -1180,7 +1186,7 @@ button.is-danger { color: #8b2635; }
   border: 1px solid color-mix(in srgb, var(--result-color, #9ca3af) 42%, #cbd5e1);
   border-radius: 9px;
   color: inherit;
-  background: color-mix(in srgb, var(--result-color, #9ca3af) 9%, white);
+  background: color-mix(in srgb, var(--result-color, #9ca3af) 9%, transparent);
   font: inherit;
   text-align: left;
 }
@@ -1191,7 +1197,7 @@ button.is-danger { color: #8b2635; }
 .inquiry-evidence-panel-premise-link:hover {
   border-color: color-mix(in srgb, var(--result-color, #9ca3af) 65%, #64748b);
   color: inherit;
-  background: color-mix(in srgb, var(--result-color, #9ca3af) 15%, white);
+  background: color-mix(in srgb, var(--result-color, #9ca3af) 15%, transparent);
 }
 .inquiry-evidence-panel-premise-link:focus-visible { outline: 2px solid #1d4f7a; outline-offset: 2px; }
 .inquiry-evidence-panel-target-card {
@@ -1207,7 +1213,7 @@ button.is-danger { color: #8b2635; }
 }
 .inquiry-evidence-panel-target-card:hover {
   border-color: color-mix(in srgb, var(--result-color, #9ca3af) 65%, #64748b);
-  background: color-mix(in srgb, var(--result-color, #9ca3af) 25%, white);
+  background: color-mix(in srgb, var(--result-color, #9ca3af) 25%, transparent);
 }
 .inquiry-evidence-panel-target-card:focus-visible { outline: 2px solid #1d4f7a; outline-offset: 2px; }
 .inquiry-evidence-panel-target-title { min-width: 0; font-weight: 750; line-height: 1.35; overflow-wrap: anywhere; }
@@ -1218,7 +1224,7 @@ button.is-danger { color: #8b2635; }
   text-align: left;
 }
 .inquiry-evidence-panel-metric-value {
-  color: color-mix(in srgb, var(--metric-color, #64748b) 50%, #0f172a);
+  color: var(--metric-color, #64748b);
   font-size: inherit;
   font-weight: 800;
 }
@@ -1314,6 +1320,7 @@ button.is-danger { color: #8b2635; }
     background: #202327;
     box-shadow: 0 18px 44px rgb(0 0 0 / 38%);
   }
+  .inquiry-legend-plot { color: #e1e5e9; }
   .inquiry-toolbar { background: transparent; }
   .inquiry-dialog::backdrop { background: rgb(2 6 14 / 72%); }
   .inquiry-legend-heading,
@@ -1502,7 +1509,6 @@ button.is-danger { color: #8b2635; }
 @media (prefers-color-scheme: dark) and (min-width: 900px) {
   .inquiry-evidence-panel-body { background: #3e454e; }
 }
-
 .inquiry-legal-footer {
   width: min(760px, calc(100% - 1rem));
   margin: 0 auto;
@@ -1609,7 +1615,6 @@ button.is-danger { color: #8b2635; }
 
 .inquiry-legal-contacts { margin: 0; color: #42556a; font-size: .9rem; }
 .inquiry-legal-dialog a { color: #1d4ed8; overflow-wrap: anywhere; }
-
 @media (prefers-color-scheme: dark) {
   .inquiry-legal-footer { color: #94a3b8; }
   .inquiry-legal-footer button,
@@ -1669,7 +1674,13 @@ button.is-danger { color: #8b2635; }
         <h2 id="inquiry-color-legend-title" data-i18n="palette.heading">Combined evidence colors</h2>
         <button type="button" id="inquiry-legend-close" class="inquiry-legend-close" data-i18n-aria-label="palette.close" aria-label="Close legend">×</button>
       </div>
-      <canvas id="inquiry-legend-canvas" role="img" data-i18n="palette.canvasFallback" data-i18n-aria-label="palette.canvasAria">Combined evidence colors.</canvas>
+      <div class="inquiry-legend-plot">
+        <canvas id="inquiry-legend-canvas" role="img" data-i18n="palette.canvasFallback" data-i18n-aria-label="palette.canvasAria">Combined evidence colors.</canvas>
+        <span class="inquiry-legend-label inquiry-legend-label-uncertain" data-i18n="palette.uncertain">Uncertain</span>
+        <span class="inquiry-legend-label inquiry-legend-label-against" data-i18n="palette.against">Opposes</span>
+        <span class="inquiry-legend-label inquiry-legend-label-dissonance" data-i18n="palette.dissonance">Dissonance</span>
+        <span class="inquiry-legend-label inquiry-legend-label-for" data-i18n="palette.for">Supports</span>
+      </div>
       <label class="inquiry-saturation-control" for="inquiry-saturation-threshold">
         <span data-i18n="palette.saturation">Evidence needed for full color</span>
         <strong><output id="inquiry-saturation-threshold-value">15</output> dBan</strong>
@@ -3186,6 +3197,15 @@ button.is-danger { color: #8b2635; }
     };
   }
 
+  // demo/src/color.ts
+  function readableMetricColor(color2) {
+    const match = /^#([\da-f]{6})$/i.exec(color2);
+    if (!match) return "#64748b";
+    const channels = match[1].match(/[\da-f]{2}/gi).map((channel) => Number.parseInt(channel, 16));
+    const foreground = [15, 23, 42];
+    return `#${channels.map((channel, index) => Math.round((channel + foreground[index]) / 2).toString(16).padStart(2, "0")).join("")}`;
+  }
+
   // demo/src/presentation.ts
   var POSITIVE_BAND_FIELDS = {
     none: "none",
@@ -3449,11 +3469,11 @@ button.is-danger { color: #8b2635; }
     });
     const index = formatted.indexOf(token);
     const numeric = element("strong", { className: "inquiry-evidence-panel-metric-value", textContent: amount });
-    numeric.style.setProperty("--metric-color", evidenceStrengthColor({
+    numeric.style.setProperty("--metric-color", readableMetricColor(evidenceStrengthColor({
       netWeightDecibans: value,
       absoluteWeightDecibans: Math.abs(value),
       dissonance: 0
-    }, { saturationThresholdDecibans }));
+    }, { saturationThresholdDecibans })));
     metric.replaceChildren(
       document.createTextNode(formatted.slice(0, index)),
       numeric,
@@ -3699,7 +3719,7 @@ button.is-danger { color: #8b2635; }
       dataset,
       textContent: text
     });
-    value.style.setProperty("--metric-color", color2);
+    value.style.setProperty("--metric-color", readableMetricColor(color2));
     return value;
   }
   function localizedNodeParts(formatMessage2, template, values, nodes) {
@@ -6083,17 +6103,6 @@ button.is-danger { color: #8b2635; }
   function clamp2(value) {
     return Math.max(-1, Math.min(1, value));
   }
-  function legendThemeForPreference(dark = false) {
-    return dark ? {
-      boundary: "#b8c0c9",
-      foreground: "#e1e5e9",
-      markerStroke: "#202327"
-    } : {
-      boundary: "#334155",
-      foreground: "#334155",
-      markerStroke: "#0f172a"
-    };
-  }
   function createLegendProjection(options) {
     const { priorHalfWidth, threshold, topHalfWidth } = projectionGeometry(options);
     function directionalSaturation2(orientation) {
@@ -6126,9 +6135,7 @@ button.is-danger { color: #8b2635; }
     width,
     summary,
     resultantColor,
-    colorOptions,
-    labels,
-    theme = legendThemeForPreference()
+    colorOptions
   }) {
     const context = canvas.getContext("2d", { alpha: true });
     if (!context) throw new Error("The color legend requires a 2D canvas context.");
@@ -6157,7 +6164,7 @@ button.is-danger { color: #8b2635; }
         context.fillRect(x2, y2, 1, 1);
       }
     }
-    context.strokeStyle = theme.boundary;
+    context.strokeStyle = "#334155";
     context.lineWidth = 1.5;
     context.beginPath();
     context.moveTo(centerX - fullHalfWidth * projection.topHalfWidth, topY);
@@ -6173,20 +6180,9 @@ button.is-danger { color: #8b2635; }
     context.arc(x, y, 5, 0, Math.PI * 2);
     context.fillStyle = resultantColor;
     context.fill();
-    context.strokeStyle = theme.markerStroke;
+    context.strokeStyle = "#0f172a";
     context.lineWidth = 2;
     context.stroke();
-    context.fillStyle = theme.foreground;
-    context.font = "700 10px system-ui";
-    context.textAlign = "center";
-    context.fillText(labels.uncertain, centerX, 10);
-    context.textAlign = "left";
-    context.fillText(labels.against, 0, height - 5);
-    context.textAlign = "center";
-    context.fillText(labels.dissonance, centerX, height - 5);
-    context.textAlign = "right";
-    context.fillText(labels.for, width, height - 5);
-    context.textAlign = "start";
   }
 
   // demo/src/inquiry/legend-controller.ts
@@ -6195,27 +6191,17 @@ button.is-danger { color: #8b2635; }
       dialog,
       openButton,
       container,
-      canvas,
-      messages,
-      darkModeQuery
+      canvas
     } = options;
     let renderState;
     function render(evidenceSummary, palette3) {
       if (evidenceSummary && palette3) renderState = { evidenceSummary, palette: palette3 };
       if (!dialog.open || !renderState) return;
-      const text = messages();
       drawColorLegend(canvas, {
         width: Math.max(200, Math.min(360, container.clientWidth)),
         summary: renderState.evidenceSummary,
         resultantColor: renderState.palette.color,
-        colorOptions: renderState.palette.colorOptions,
-        labels: {
-          uncertain: text.uncertain,
-          against: text.against,
-          dissonance: text.dissonance,
-          for: text.for
-        },
-        theme: legendThemeForPreference(darkModeQuery?.matches)
+        colorOptions: renderState.palette.colorOptions
       });
     }
     function setOpen(open) {
@@ -6235,7 +6221,6 @@ button.is-danger { color: #8b2635; }
       event.preventDefault();
       setOpen(false);
     });
-    darkModeQuery?.addEventListener("change", () => render());
     return { render, setOpen };
   }
 
@@ -6430,9 +6415,7 @@ button.is-danger { color: #8b2635; }
       dialog: requiredElement("#inquiry-legend-dialog"),
       openButton: requiredElement("#inquiry-legend-open"),
       container: requiredElement("#inquiry-color-legend"),
-      canvas: requiredElement("#inquiry-legend-canvas"),
-      messages: () => i18n2.messages.palette,
-      darkModeQuery: window.matchMedia?.("(prefers-color-scheme: dark)")
+      canvas: requiredElement("#inquiry-legend-canvas")
     });
     requiredElement("#inquiry-legend-close").addEventListener("click", () => legend.setOpen(false));
     const formDialog = createFormDialog({

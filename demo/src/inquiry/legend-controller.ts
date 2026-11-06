@@ -1,9 +1,5 @@
 import type { EvidenceSummary } from '@bycelium/evidence-diagrams';
-import {
-  drawColorLegend,
-  legendThemeForPreference,
-  type PaletteMessages,
-} from '../diagram/color-legend.ts';
+import { drawColorLegend } from '../diagram/color-legend.ts';
 
 type CredibilityPalette = {
   color: string;
@@ -19,8 +15,6 @@ type LegendControllerOptions = {
   openButton: HTMLButtonElement;
   container: HTMLElement;
   canvas: HTMLCanvasElement;
-  messages: () => PaletteMessages;
-  darkModeQuery?: MediaQueryList;
 };
 
 export function createLegendController(options: LegendControllerOptions): {
@@ -32,27 +26,17 @@ export function createLegendController(options: LegendControllerOptions): {
     openButton,
     container,
     canvas,
-    messages,
-    darkModeQuery,
   } = options;
   let renderState: { evidenceSummary: EvidenceSummary; palette: CredibilityPalette } | undefined;
 
   function render(evidenceSummary?: EvidenceSummary, palette?: CredibilityPalette): void {
     if (evidenceSummary && palette) renderState = { evidenceSummary, palette };
     if (!dialog.open || !renderState) return;
-    const text = messages();
     drawColorLegend(canvas, {
       width: Math.max(200, Math.min(360, container.clientWidth)),
       summary: renderState.evidenceSummary,
       resultantColor: renderState.palette.color,
       colorOptions: renderState.palette.colorOptions,
-      labels: {
-        uncertain: text.uncertain,
-        against: text.against,
-        dissonance: text.dissonance,
-        for: text.for,
-      },
-      theme: legendThemeForPreference(darkModeQuery?.matches),
     });
   }
 
@@ -74,6 +58,5 @@ export function createLegendController(options: LegendControllerOptions): {
     event.preventDefault();
     setOpen(false);
   });
-  darkModeQuery?.addEventListener('change', () => render());
   return { render, setOpen };
 }

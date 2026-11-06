@@ -4,7 +4,7 @@ Combine sourced arguments, measure dissonance, and see how each premise changes 
 
 [Open the live demo](https://evidence.bycelium.com) · [Download the standalone demo](https://raw.githubusercontent.com/Bycelium/EvidenceDiagrams/main/demo/index.html)
 
-The demo runs in English and French, supports light and dark themes, and works offline from the downloaded HTML.
+The demo runs in English and French, follows the system color preference with a light fallback, and works offline from the downloaded HTML. It is compatible with browser extensions such as Dark Reader.
 
 ## Demo walkthrough
 

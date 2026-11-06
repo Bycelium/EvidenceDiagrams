@@ -26,19 +26,6 @@ export type LegendProjectionOptions = ColorOptions & {
   saturationThresholdDecibans: number;
 };
 
-export type LegendTheme = {
-  boundary: string;
-  foreground: string;
-  markerStroke: string;
-};
-
-export type LegendLabels = {
-  uncertain: string;
-  against: string;
-  dissonance: string;
-  for: string;
-};
-
 export type LegendProjection = {
   topHalfWidth: number;
   halfWidthAt: (height: number) => number;
@@ -70,18 +57,6 @@ function projectionGeometry(options: LegendProjectionOptions): {
 
 function clamp(value: number): number {
   return Math.max(-1, Math.min(1, value));
-}
-
-export function legendThemeForPreference(dark = false): LegendTheme {
-  return dark ? {
-    boundary: '#b8c0c9',
-    foreground: '#e1e5e9',
-    markerStroke: '#202327',
-  } : {
-    boundary: '#334155',
-    foreground: '#334155',
-    markerStroke: '#0f172a',
-  };
 }
 
 /** Maps the library's triangular color coordinates onto the widening legend. */
@@ -127,15 +102,11 @@ export function drawColorLegend(canvas: HTMLCanvasElement, {
   summary,
   resultantColor,
   colorOptions,
-  labels,
-  theme = legendThemeForPreference(),
 }: {
   width: number;
   summary: EvidenceSummary;
   resultantColor: string;
   colorOptions: LegendProjectionOptions;
-  labels: LegendLabels;
-  theme?: LegendTheme;
 }): void {
   const context = canvas.getContext('2d', { alpha: true });
   if (!context) throw new Error('The color legend requires a 2D canvas context.');
@@ -166,7 +137,7 @@ export function drawColorLegend(canvas: HTMLCanvasElement, {
     }
   }
 
-  context.strokeStyle = theme.boundary;
+  context.strokeStyle = '#334155';
   context.lineWidth = 1.5;
   context.beginPath();
   context.moveTo(centerX - fullHalfWidth * projection.topHalfWidth, topY);
@@ -183,19 +154,8 @@ export function drawColorLegend(canvas: HTMLCanvasElement, {
   context.arc(x, y, 5, 0, Math.PI * 2);
   context.fillStyle = resultantColor;
   context.fill();
-  context.strokeStyle = theme.markerStroke;
+  context.strokeStyle = '#0f172a';
   context.lineWidth = 2;
   context.stroke();
 
-  context.fillStyle = theme.foreground;
-  context.font = '700 10px system-ui';
-  context.textAlign = 'center';
-  context.fillText(labels.uncertain, centerX, 10);
-  context.textAlign = 'left';
-  context.fillText(labels.against, 0, height - 5);
-  context.textAlign = 'center';
-  context.fillText(labels.dissonance, centerX, height - 5);
-  context.textAlign = 'right';
-  context.fillText(labels.for, width, height - 5);
-  context.textAlign = 'start';
 }
