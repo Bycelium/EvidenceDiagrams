@@ -1,0 +1,59 @@
+{
+  "name": "@bycelium/evidence-diagrams",
+  "version": "1.2.0",
+  "description": "Evidence weighting, credibility, color, and Inquiry graph calculations in decibans.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bycelium/EvidenceDiagrams.git"
+  },
+  "homepage": "https://github.com/Bycelium/EvidenceDiagrams#readme",
+  "bugs": {
+    "url": "https://github.com/Bycelium/EvidenceDiagrams/issues"
+  },
+  "keywords": [
+    "evidence",
+    "probability",
+    "bayes",
+    "deciban",
+    "visualization"
+  ],
+  "packageManager": "pnpm@10.20.0",
+  "engines": {
+    "node": ">=24.3.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./propagation-math": {
+      "types": "./dist/propagation-math/index.d.ts",
+      "import": "./dist/propagation-math/index.js",
+      "default": "./dist/propagation-math/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "node ../../scripts/build.mjs",
+    "test": "pnpm run build && node --test src/**/*.test.ts",
+    "typecheck": "pnpm run build && tsc --noEmit",
+    "prepack": "pnpm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "typescript": "^5.9.3"
+  }
+}

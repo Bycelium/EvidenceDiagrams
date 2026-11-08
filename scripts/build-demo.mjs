@@ -1,13 +1,16 @@
 import { readFile, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
 import { build } from 'esbuild';
 
 const packageDirectory = new URL('../', import.meta.url);
 const demoDirectory = new URL('demo/', packageDirectory);
+const demoRequire = createRequire(new URL('package.json', demoDirectory));
 const sourceDirectory = new URL('src/', demoDirectory);
 const templatePath = new URL('index.template.html', sourceDirectory);
 const cssPath = new URL('styles/app.css', sourceDirectory);
+const domCssPath = demoRequire.resolve('@bycelium/evidence-diagrams-dom/styles.css');
 const javaScriptPath = new URL('main.ts', sourceDirectory);
 const faviconPath = new URL('favicon.svg', demoDirectory);
 const outputPath = new URL('index.html', demoDirectory);
@@ -35,8 +38,9 @@ async function verifyPngAsset(path, width, height) {
   }
 }
 
-const [htmlTemplate, css, favicon, license, notice, result] = await Promise.all([
+const [htmlTemplate, domCss, css, favicon, license, notice, result] = await Promise.all([
   readFile(templatePath, 'utf8'),
+  readFile(domCssPath, 'utf8'),
   readFile(cssPath, 'utf8'),
   readFile(faviconPath, 'utf8'),
   readFile(new URL('LICENSE', packageDirectory), 'utf8'),
@@ -67,7 +71,7 @@ if (!htmlTemplate.includes(cssTag)
   throw new Error('The Inquiry demo template no longer contains the expected asset tags.');
 }
 
-const embeddedCss = css.replaceAll(/<\/style/giu, '<\\/style');
+const embeddedCss = `${domCss}\n${css}`.replaceAll(/<\/style/giu, '<\\/style');
 const embeddedJavaScript = result.outputFiles[0].text.replaceAll(/<\/script/giu, '<\\/script');
 const embeddedFavicon = Buffer.from(favicon).toString('base64');
 const standaloneHtml = htmlTemplate

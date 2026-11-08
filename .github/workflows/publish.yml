@@ -27,15 +27,17 @@ jobs:
       - name: Install npm with trusted publishing support
         run: npm install --global npm@^11.5.1
       - run: pnpm install --frozen-lockfile
-      - name: Verify release tag
+      - name: Select and verify release package
+        id: release-package
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: >-
-          node --input-type=module -e
-          "import packageJson from './package.json' with { type: 'json' };
-          const expected = 'v' + packageJson.version;
-          if (process.env.RELEASE_TAG !== expected) {
-            throw new Error('Release tag ' + process.env.RELEASE_TAG + ' must equal ' + expected);
-          }"
+        run: node scripts/release-package.mjs --tag "$RELEASE_TAG" --github-output "$GITHUB_OUTPUT"
       - run: pnpm check
-      - run: npm publish --access public --provenance
+      - name: Pack selected package
+        run: pnpm --filter '${{ steps.release-package.outputs.package_name }}' pack --out "$RUNNER_TEMP/release.tgz"
+      - name: Check whether selected archive is already published
+        id: published-release
+        run: node scripts/check-published-release.mjs --package-name '${{ steps.release-package.outputs.package_name }}' --package-version '${{ steps.release-package.outputs.package_version }}' --archive "$RUNNER_TEMP/release.tgz" --github-output "$GITHUB_OUTPUT"
+      - name: Publish selected archive
+        if: steps.published-release.outputs.published != 'true'
+        run: npm publish "$RUNNER_TEMP/release.tgz" --access public --provenance

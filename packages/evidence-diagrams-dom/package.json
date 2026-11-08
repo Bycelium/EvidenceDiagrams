@@ -1,0 +1,62 @@
+{
+  "name": "@bycelium/evidence-diagrams-dom",
+  "version": "1.0.0",
+  "description": "Native DOM and SVG credibility presentations for Evidence Diagrams.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bycelium/EvidenceDiagrams.git"
+  },
+  "homepage": "https://github.com/Bycelium/EvidenceDiagrams#readme",
+  "bugs": {
+    "url": "https://github.com/Bycelium/EvidenceDiagrams/issues"
+  },
+  "keywords": [
+    "evidence",
+    "probability",
+    "deciban",
+    "visualization",
+    "dom"
+  ],
+  "packageManager": "pnpm@10.20.0",
+  "engines": {
+    "node": ">=24.3.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./styles.css"
+  },
+  "files": [
+    "dist",
+    "styles.css",
+    "NOTICE"
+  ],
+  "sideEffects": [
+    "./styles.css"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/behavior/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "check": "pnpm run test && pnpm run typecheck && pnpm run build",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "@bycelium/evidence-diagrams": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -2,7 +2,7 @@ import {
   evaluateInquiry,
   type InquiryEvaluation,
 } from '@bycelium/evidence-diagrams';
-import { element } from '../dom.ts';
+import { element } from '../html-element.ts';
 import type { InterpolationValues } from '../i18n/index.ts';
 import type { InquirySession } from '../state.ts';
 import { claimById, resultForClaim } from './lookups.ts';

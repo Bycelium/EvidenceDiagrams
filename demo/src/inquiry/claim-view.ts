@@ -5,7 +5,7 @@ import {
   type ClaimCardMessages,
 } from '../components/claim-card.ts';
 import { renderClaimEvidencePreview } from '../components/claim-evidence-preview.ts';
-import { element } from '../dom.ts';
+import { element } from '../html-element.ts';
 import type { I18n } from '../i18n/index.ts';
 import type { PresentationI18n } from '../presentation.ts';
 import { inquiryClaimView, type InquirySession } from '../state.ts';

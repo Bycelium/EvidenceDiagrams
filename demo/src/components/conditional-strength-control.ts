@@ -3,7 +3,7 @@ import {
   jeffreysBand,
 } from '@bycelium/evidence-diagrams';
 import { readableMetricColor } from '../color.ts';
-import { element } from '../dom.ts';
+import { element } from '../html-element.ts';
 import type { I18n } from '../i18n/index.ts';
 import { signedNumber } from '../presentation.ts';
 import { renderForceArrow, updateForceArrow } from './force-arrow.ts';
@@ -42,7 +42,6 @@ export interface ConditionalMessages {
   readonly conditionalOpposition: string;
   readonly conditionalSupport: string;
   readonly directionalStrengthNone: string;
-  readonly ifThisWereTrue: string;
 }
 
 type ConditionalStrengthControlOptions = {
@@ -179,9 +178,7 @@ export function createConditionalStrengthControl({
     input.value = String(visibleValue);
     input.classList.toggle('is-clipped', visibleValue !== current);
     reset.disabled = Math.abs(current - defaultValue) <= 1e-12;
-    updateForceArrow(arrow, visibleValue, forceExtentDecibans, evidenceStrengthColor({
-      netWeightDecibans: current, absoluteWeightDecibans: Math.abs(current), dissonance: 0,
-    }, { saturationThresholdDecibans }));
+    updateForceArrow(arrow, visibleValue, forceExtentDecibans);
     updateMetric(metric, messages, formatMessage, number, current, saturationThresholdDecibans);
     if (heading) updatePanelHeading(heading, messages, formatMessage, current);
     relation.textContent = current < 0

@@ -3,7 +3,7 @@ import {
   jeffreysBand,
 } from '@bycelium/evidence-diagrams';
 import type { I18n } from '../i18n/index.ts';
-import { element } from '../dom.ts';
+import { element } from '../html-element.ts';
 import { signedNumber } from '../presentation.ts';
 import type { ConditionalMessages } from './conditional-strength-control.ts';
 

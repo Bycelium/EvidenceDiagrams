@@ -1,4 +1,4 @@
-import { element } from '../dom.ts';
+import { element } from '../html-element.ts';
 
 export function updateForceArrow(
   arrow: HTMLElement,

@@ -99,6 +99,21 @@ test('adding evidence creates a source and a default premise, then opens that pr
   assert.equal(session.focusClaimId, session.inquiry.claims[1].id);
 });
 
+test('premise conditions default to true and preserve the assigned impact through edits and cloning', () => {
+  const session = createInquirySession(baseInquiry());
+  const evidence = addInquiryEvidence(session, {
+    contribution: { title: 'Source A' },
+    premiseTitle: 'Premise A',
+    impact: { deltaMean: 4, deltaStandardDeviation: -2 },
+  });
+  assert.equal(evidence.premiseState, 'true');
+
+  editInquiryEvidence(session, evidence.id, { premiseState: 'false' });
+  const copy = cloneInquirySession(session);
+  assert.equal(copy.inquiry.evidence[0]?.premiseState, 'false');
+  assert.deepEqual(copy.inquiry.evidence[0]?.impact, { deltaMean: 4, deltaStandardDeviation: -2 });
+});
+
 test('session initial values survive edits and candidate cloning for reset controls', () => {
   const inquiry = baseInquiry();
   inquiry.claims.push({ id: 'premise', title: 'Premise', prior: { mean: 2, standardDeviation: 1 } });

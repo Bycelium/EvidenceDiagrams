@@ -9,16 +9,18 @@ import {
   type InquiryEvaluationStep,
   type InquiryEvidence,
 } from '@bycelium/evidence-diagrams';
-import { gaussianToBand, type Gaussian } from '@bycelium/evidence-diagrams/propagation-math';
-import { element, safeHttpUrl } from '../dom.ts';
+import { applyImpact, gaussianToBand } from '@bycelium/evidence-diagrams/propagation-math';
+import { element } from '../html-element.ts';
+import { safeHttpUrl } from '../safe-http-url.ts';
 import { readableMetricColor } from '../color.ts';
 import type { I18n } from '../i18n/index.ts';
-import { formatJeffreysStrength, type StrengthMessages } from '../presentation.ts';
+import type { StrengthMessages } from '../presentation.ts';
 import { claimEvidenceSummary, renderClaimCredibility, type ClaimCardMessages } from './claim-card.ts';
 import { renderClaimEvidencePreview } from './claim-evidence-preview.ts';
 import { createConditionalStrengthControl, type ConditionalMessages } from './conditional-strength-control.ts';
 import type { FormMessages } from './inquiry-forms.ts';
 import { renderEvidenceImpactPreview } from './evidence-impact-preview.ts';
+import { createPremiseConditionControl } from './premise-condition-control.ts';
 
 export type PanelState = {
   inquiry: Inquiry;
@@ -32,9 +34,27 @@ export interface EvidenceDetailMessages {
   readonly evidenceDetails: string;
   readonly closeEvidenceDetails: string;
   readonly basedOn: string;
-  readonly ifClaimIsTrue: string;
+  readonly premiseCondition: string;
+  readonly premiseHeading: string;
+  readonly premiseIs: string;
+  readonly premiseConditionSuffix: string;
+  readonly premiseTrue: string;
+  readonly premiseFalse: string;
+  readonly changeToTrue: string;
+  readonly changeToFalse: string;
   readonly currentImpactIntro: string;
   readonly selectedEvidenceImpact: string;
+  readonly conditionalImpactSentence: string;
+  readonly premiseCredibilitySentence: string;
+  readonly premiseFalseProbabilitySentence: string;
+  readonly atPremiseCredibility: string;
+  readonly atPremiseFalseProbability: string;
+  readonly premiseCredibilityApplies: string;
+  readonly premiseCredibilityTitle: string;
+  readonly premiseFalseProbabilityTitle: string;
+  readonly currentImpactSentence: string;
+  readonly currentImpactUncertaintySentence: string;
+  readonly selectedEvidenceImpactAria: string;
   readonly credibilityInterval: string;
   readonly premiseWeightingSentence: string;
   readonly andGivenClaimCredibility: string;
@@ -46,6 +66,10 @@ export interface EvidenceDetailMessages {
 
 export type EvidencePanelCallbacks = {
   onConditionalStrengthChange?: (evidenceId: string, deltaMean: number) => PanelState | undefined;
+  onPremiseStateChange?: (input: {
+    readonly evidenceId: string;
+    readonly premiseState: 'true' | 'false';
+  }) => PanelState | undefined;
   onInvestigate?: (claimId: string | undefined) => void;
   onEditEvidence?: (evidenceId: string | undefined) => void;
   onRemoveEvidence?: (evidenceId: string | undefined) => void;
@@ -76,12 +100,12 @@ function stepForEvidence(evaluation: InquiryEvaluation, item: InquiryEvidence): 
     .find((step) => step.evidenceId === item.id);
 }
 
-function narrativeHeading(messages: EvidenceDetailMessages, premiseProbability: number): string {
-  return premiseProbability < .5 ? messages.butGivenClaimCredibility : messages.andGivenClaimCredibility;
+function narrativeHeading(messages: EvidenceDetailMessages, premiseWeight: number): string {
+  return premiseWeight < .5 ? messages.butGivenClaimCredibility : messages.andGivenClaimCredibility;
 }
 
-function formattedPremiseProbability(i18n: I18n, premiseProbability: number): string {
-  return `≈ ${i18n.percent(premiseProbability)}`;
+function formattedPremiseWeight(i18n: I18n, premiseWeight: number): string {
+  return `≈ ${i18n.percent(premiseWeight)}`;
 }
 
 function metricValue(text: string, color: string, dataset: Record<string, string> = {}): HTMLElement {
@@ -116,26 +140,6 @@ function localizedNodeParts(
   }
   parts.push(document.createTextNode(sentence.slice(cursor)));
   return parts;
-}
-
-function updateCurrentStrength(
-  node: HTMLElement,
-  i18n: I18n,
-  formatMessage: I18n['formatMessage'],
-  messages: StrengthMessages,
-  before: Gaussian,
-  after: Gaussian,
-): void {
-  const meanShift = after.mean - before.mean;
-  if (Math.abs(meanShift) > 1e-12) {
-    node.textContent = formatMessage(
-      meanShift > 0 ? messages.strengthSupport : messages.strengthOpposition,
-      { strength: formatJeffreysStrength(i18n, meanShift) },
-    );
-    return;
-  }
-  const widthShift = after.standardDeviation - before.standardDeviation;
-  node.textContent = Math.abs(widthShift) > 1e-12 ? messages.strengthWidth : messages.strengthNone;
 }
 
 function formatEndpointProbability(i18n: I18n, decibans: number, direction: 'lower' | 'upper' | 'exact' = 'exact'): string {
@@ -287,7 +291,6 @@ export function createInquiryEvidencePanel(options: EvidencePanelOptions) {
   document.body.append(dialog);
 
   let current: PanelState | undefined;
-  let currentForceExtentDecibans: number | undefined;
   let backdropPointerDown = false;
 
   function requireSelection(state: PanelState) {
@@ -327,7 +330,6 @@ export function createInquiryEvidencePanel(options: EvidencePanelOptions) {
       Math.abs(item.impact.deltaMean),
       Math.abs(conditionalStrengthDefault),
     );
-    currentForceExtentDecibans = forceExtentDecibans;
     const premiseSummary = claimEvidenceSummary(premiseEvaluation);
     const premiseCredibility = renderClaimCredibility(
       i18n,
@@ -336,19 +338,14 @@ export function createInquiryEvidencePanel(options: EvidencePanelOptions) {
       premiseSummary,
       saturationThresholdDecibans,
     );
-    const strength = element('span', {
-      className: 'inquiry-evidence-panel-strength',
-      dataset: { effectMetric: 'current' },
-    });
-    updateCurrentStrength(strength, i18n, i18n.formatMessage, strengthMessages, step.before, step.after);
     const impactPreview = renderEvidenceImpactPreview({
       i18n,
-      scaleMessages: conditionalMessages,
-      formatMessage: i18n.formatMessage,
-      posterior: targetEvaluation.posterior,
-      meanShift: step.after.mean - step.before.mean,
+      before: step.before,
+      conditional: applyImpact(step.before, item.impact, 1),
+      after: step.after,
+      premiseWeight: step.premiseWeight,
+      premiseState: step.premiseState,
       saturationThresholdDecibans,
-      forceExtentDecibans,
       label: i18n.formatMessage(messages.selectedEvidenceImpact, { target: target.title }),
     });
     const title = element('h2', {
@@ -369,12 +366,27 @@ export function createInquiryEvidencePanel(options: EvidencePanelOptions) {
     }, [
       element('h3', {
         id: 'inquiry-evidence-panel-premise-title',
-        textContent: messages.ifClaimIsTrue,
+        textContent: messages.premiseHeading,
       }),
       element('p', {
         className: 'inquiry-evidence-panel-premise-title',
         textContent: premise.title,
       }),
+      element('div', { className: 'inquiry-evidence-panel-premise-condition' }, [
+        element('span', { textContent: messages.premiseIs }),
+        element('span', { className: 'inquiry-evidence-panel-premise-choice' }, [
+          createPremiseConditionControl({
+            label: messages.premiseCondition,
+            initialState: step.premiseState,
+            trueLabel: messages.premiseTrue,
+            falseLabel: messages.premiseFalse,
+            changeToTrue: messages.changeToTrue,
+            changeToFalse: messages.changeToFalse,
+            onChange: ({ premiseState }) => changePremiseState(premiseState),
+          }).element,
+          element('span', { textContent: messages.premiseConditionSuffix }),
+        ]),
+      ]),
     ]);
     const premiseCredibilityValue = credibilityInterval(
       i18n,
@@ -384,7 +396,7 @@ export function createInquiryEvidencePanel(options: EvidencePanelOptions) {
       premiseCredibility.palette.color,
     );
     const estimatedProbability = metricValue(
-      formattedPremiseProbability(i18n, step.premiseProbability),
+      formattedPremiseWeight(i18n, step.premiseWeight),
       premiseCredibility.palette.color,
     );
     const premiseTitleValue = element('span', {
@@ -394,7 +406,7 @@ export function createInquiryEvidencePanel(options: EvidencePanelOptions) {
     const premiseWeightingSentence = localizedNodeParts(
       i18n.formatMessage,
       messages.premiseWeightingSentence,
-      {},
+      { condition: step.premiseState === 'true' ? messages.premiseTrue : messages.premiseFalse },
       {
         claim: premiseTitleValue,
         interval: premiseCredibilityValue,
@@ -431,7 +443,7 @@ export function createInquiryEvidencePanel(options: EvidencePanelOptions) {
       element('h3', {
         id: 'inquiry-evidence-panel-effect-title',
         dataset: { narrativeHeading: '' },
-        textContent: narrativeHeading(messages, step.premiseProbability),
+        textContent: narrativeHeading(messages, step.premiseWeight),
       }),
       premiseLink,
     ]);
@@ -444,7 +456,6 @@ export function createInquiryEvidencePanel(options: EvidencePanelOptions) {
         textContent: messages.currentImpactIntro,
       }),
       element('div', { className: 'inquiry-evidence-panel-conclusion-content' }, [
-        element('p', { className: 'inquiry-evidence-panel-current-conclusion' }, [strength]),
         impactPreview,
         hasZeroAssignedImpact(item) ? element('p', {
           className: 'inquiry-evidence-panel-no-additional-effect',
@@ -501,25 +512,20 @@ export function createInquiryEvidencePanel(options: EvidencePanelOptions) {
 
   function updateLiveEffect(): void {
     const messages = options.messages();
-    const strengthMessages = options.strengthMessages();
-    const conditionalMessages = options.conditionalMessages();
     const claimCardMessages = options.claimCardMessages();
     const state = selectedState();
-    const { step, target, targetEvaluation } = requireSelection(state);
+    const { item, step, target, targetEvaluation } = requireSelection(state);
     const threshold = state.saturationThresholdDecibans
       ?? DEFAULT_COLOR_OPTIONS.saturationThresholdDecibans;
-    const metric = dialog.querySelector<HTMLElement>('[data-effect-metric="current"]');
-    if (!metric) return;
-    updateCurrentStrength(metric, i18n, i18n.formatMessage, strengthMessages, step.before, step.after);
     const impactPreview = dialog.querySelector('.inquiry-evidence-impact-preview');
     impactPreview?.replaceWith(renderEvidenceImpactPreview({
       i18n,
-      scaleMessages: conditionalMessages,
-      formatMessage: i18n.formatMessage,
-      posterior: targetEvaluation.posterior,
-      meanShift: step.after.mean - step.before.mean,
+      before: step.before,
+      conditional: applyImpact(step.before, item.impact, 1),
+      after: step.after,
+      premiseWeight: step.premiseWeight,
+      premiseState: step.premiseState,
       saturationThresholdDecibans: threshold,
-      forceExtentDecibans: currentForceExtentDecibans,
       label: i18n.formatMessage(messages.selectedEvidenceImpact, { target: target.title }),
     }));
     dialog.querySelector('.inquiry-evidence-panel-target-card')?.replaceWith(
@@ -535,6 +541,18 @@ export function createInquiryEvidencePanel(options: EvidencePanelOptions) {
     if (!acceptPanelState(next)) return false;
     updateLiveEffect();
     return true;
+  }
+
+  function changePremiseState(premiseState: 'true' | 'false'): void {
+    const state = selectedState();
+    const { item } = requireSelection(state);
+    if ((item.premiseState ?? 'true') === premiseState) return;
+    const next = callbacks.onPremiseStateChange?.({ evidenceId: state.evidenceId, premiseState });
+    if (!acceptPanelState(next)) return;
+    render();
+    requestAnimationFrame(() => {
+      dialog.querySelector<HTMLButtonElement>(`button[data-premise-state="${premiseState}"]`)?.focus();
+    });
   }
 
   dialog.addEventListener('click', (event: MouseEvent) => {

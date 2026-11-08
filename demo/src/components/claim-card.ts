@@ -8,7 +8,7 @@ import {
 import { gaussianToBand, type Gaussian } from '@bycelium/evidence-diagrams/propagation-math';
 
 import { credibilityDisplayBounds } from '../diagram/geometry.ts';
-import { element } from '../dom.ts';
+import { element } from '../html-element.ts';
 import type { I18n } from '../i18n/index.ts';
 
 export interface ClaimCardMessages {

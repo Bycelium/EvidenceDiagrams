@@ -37,6 +37,28 @@ test('recursively evaluates premises before applying their fixed impacts', () =>
   assert.equal(result.claims.root!.steps[0]!.premiseProbability, premiseProbability);
 });
 
+test('uses a direct false-condition probability when the true probability rounds to one', () => {
+  const result = evaluatePropagationGraph({
+    rootId: 'root',
+    claims: [
+      { id: 'root', prior: { mean: 0, standardDeviation: 0 } },
+      { id: 'premise', prior: { mean: 400, standardDeviation: 0 } },
+    ],
+    evidence: [{
+      id: 'false-condition',
+      premiseId: 'premise',
+      targetId: 'root',
+      premiseState: 'false',
+      impact: { deltaMean: 10, deltaStandardDeviation: 0 },
+    }],
+  });
+  const step = result.claims.root!.steps[0]!;
+  assert.equal(step.premiseProbability, 1);
+  assert.ok(step.premiseWeight > 0);
+  assert.ok(step.premiseWeight < 1e-30);
+  assert.equal(step.premiseState, 'false');
+});
+
 test('replays each target evidence list in array order', () => {
   const result = evaluatePropagationGraph({
     rootId: 'root',

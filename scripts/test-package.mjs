@@ -5,9 +5,9 @@ import { join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const packageRoot = fileURLToPath(new URL('../', import.meta.url));
+const packageRoot = fileURLToPath(new URL('../packages/evidence-diagrams/', import.meta.url));
 const temporaryDirectory = await mkdtemp(join(tmpdir(), 'evidence-diagrams-package-'));
-const rootManifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+const rootManifest = JSON.parse(await readFile(new URL('../packages/evidence-diagrams/package.json', import.meta.url), 'utf8'));
 const packageSpecifier = rootManifest.name;
 const mathSpecifier = `${packageSpecifier}/propagation-math`;
 const installedPackageDirectory = join(
@@ -36,19 +36,23 @@ function run(command, argumentsList, options = {}) {
   });
 }
 
-try {
-  const packOutput = await run('npm', [
-    'pack',
-    '--json',
-    '--ignore-scripts',
-    '--pack-destination',
-    temporaryDirectory,
-  ]);
-  const [archive] = JSON.parse(packOutput);
-  assert.equal(archive.name, rootManifest.name);
-  assert.equal(archive.version, rootManifest.version);
+async function pnpm(argumentsList, options = {}) {
+  const executable = process.env.npm_execpath;
+  if (executable?.endsWith('.cjs') || executable?.endsWith('.js')) {
+    return run(process.execPath, [executable, ...argumentsList], options);
+  }
+  return run(executable ?? 'pnpm', argumentsList, options);
+}
 
-  const files = archive.files.map(({ path }) => path).sort();
+try {
+  const archiveFilename = `evidence-diagrams-${rootManifest.version}.tgz`;
+  const archivePath = join(temporaryDirectory, archiveFilename);
+  await pnpm(['--filter', rootManifest.name, 'pack', '--out', archivePath]);
+  const files = (await run('tar', ['-tzf', archivePath]))
+    .trim()
+    .split('\n')
+    .map((path) => path.replace(/^package\//u, ''))
+    .sort();
   assert.ok(files.includes('dist/index.js'), 'The archive must contain the JavaScript entry point.');
   assert.ok(files.includes('dist/index.d.ts'), 'The archive must contain TypeScript declarations.');
   assert.ok(
@@ -80,16 +84,15 @@ try {
     private: true,
     type: 'module',
     dependencies: {
-      [rootManifest.name]: `file:${join(temporaryDirectory, archive.filename)}`,
+      [rootManifest.name]: `file:${archivePath}`,
     },
   }, null, 2));
-  await run('npm', [
+  await pnpm([
     'install',
     '--ignore-scripts',
-    '--package-lock=false',
     '--offline',
-    '--no-audit',
-    '--no-fund',
+    '--store-dir',
+    join(temporaryDirectory, 'pnpm-store'),
   ], { cwd: consumerDirectory });
 
   const source = `import assert from 'node:assert/strict';
@@ -209,7 +212,7 @@ void rootMean;
       `The installed ${name} must preserve the project notice.`,
     );
   }
-  console.log(`Archive validated: ${archive.filename} (${files.length} files).`);
+  console.log(`Archive validated: ${archiveFilename} (${files.length} files).`);
 } finally {
   await rm(temporaryDirectory, { recursive: true, force: true });
 }

@@ -86,6 +86,7 @@ export function cloneInquiry<const Source extends Inquiry>(inquiry: Source): Mut
           deltaMean: item.impact.deltaMean,
           deltaStandardDeviation: item.impact.deltaStandardDeviation,
         },
+        ...(item.premiseState === undefined ? {} : { premiseState: item.premiseState }),
       };
       if (item.relayContributionIds) copy.relayContributionIds = [...item.relayContributionIds];
       return copy;
@@ -242,6 +243,7 @@ export function addInquiryEvidence(session: InquirySession, {
   premiseDescription,
   premisePrior = DEFAULT_CLAIM_PRIOR,
   impact,
+  premiseState = 'true',
 }: {
   contribution: Omit<DemoContribution, 'id'>;
   premiseClaimId?: string;
@@ -249,6 +251,7 @@ export function addInquiryEvidence(session: InquirySession, {
   premiseDescription?: string;
   premisePrior?: Gaussian;
   impact: GaussianImpact;
+  premiseState?: 'true' | 'false';
 }): DemoEvidence {
   const inquiry = session.inquiry;
   const targetClaimId = session.focusClaimId;
@@ -277,6 +280,7 @@ export function addInquiryEvidence(session: InquirySession, {
     premiseClaimId: resolvedPremiseClaimId,
     targetClaimId,
     impact: { ...impact },
+    premiseState,
   };
   inquiry.evidence.push(evidence);
   session.initialValues.deltaMeansByEvidenceId[evidence.id] = evidence.impact.deltaMean;
@@ -296,7 +300,12 @@ export function editInquiryClaim(
 export function editInquiryEvidence(session: InquirySession, evidenceId: string, {
   contribution,
   impact,
-}: { contribution?: Omit<DemoContribution, 'id'>; impact?: GaussianImpact }): DemoEvidence {
+  premiseState,
+}: {
+  contribution?: Omit<DemoContribution, 'id'>;
+  impact?: GaussianImpact;
+  premiseState?: 'true' | 'false';
+}): DemoEvidence {
   const inquiry = session.inquiry;
   const item = findEvidence(inquiry, evidenceId);
   const source = inquiry.contributions.find(({ id }) => id === item.contributionId);
@@ -309,6 +318,7 @@ export function editInquiryEvidence(session: InquirySession, evidenceId: string,
     else delete source.locator;
   }
   if (impact !== undefined) item.impact = { ...impact };
+  if (premiseState !== undefined) item.premiseState = premiseState;
   return item;
 }
 

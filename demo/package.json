@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@bycelium/evidence-diagrams": "workspace:*"
+    "@bycelium/evidence-diagrams": "workspace:*",
+    "@bycelium/evidence-diagrams-dom": "workspace:*"
   }
 }

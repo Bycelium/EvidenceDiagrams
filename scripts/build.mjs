@@ -2,10 +2,10 @@ import { cp, mkdir, rm } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const packageDirectory = new URL('../', import.meta.url);
-const distDirectory = new URL('../dist/', import.meta.url);
+const repositoryDirectory = new URL('../', import.meta.url);
+const distDirectory = new URL('../packages/evidence-diagrams/dist/', import.meta.url);
 const mathDistDirectory = new URL('../packages/propagation-math/dist/', import.meta.url);
-const publishedMathDirectory = new URL('../dist/propagation-math/', import.meta.url);
+const publishedMathDirectory = new URL('../packages/evidence-diagrams/dist/propagation-math/', import.meta.url);
 const tscPath = fileURLToPath(new URL('../node_modules/typescript/bin/tsc', import.meta.url));
 
 await rm(distDirectory, { recursive: true, force: true });
@@ -14,7 +14,7 @@ await rm(mathDistDirectory, { recursive: true, force: true });
 function compile(project) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [tscPath, '-p', project], {
-      cwd: fileURLToPath(packageDirectory),
+      cwd: fileURLToPath(repositoryDirectory),
       stdio: 'inherit',
     });
     child.on('error', reject);
@@ -28,4 +28,4 @@ function compile(project) {
 await compile('packages/propagation-math/tsconfig.build.json');
 await mkdir(distDirectory, { recursive: true });
 await cp(mathDistDirectory, publishedMathDirectory, { recursive: true });
-await compile('tsconfig.build.json');
+await compile('packages/evidence-diagrams/tsconfig.build.json');

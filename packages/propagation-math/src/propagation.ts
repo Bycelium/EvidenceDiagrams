@@ -15,6 +15,7 @@ export type PropagationEvidence = {
   readonly premiseId: string;
   readonly targetId: string;
   readonly impact: GaussianImpact;
+  readonly premiseState?: 'true' | 'false';
 };
 
 export type PropagationGraph = {
@@ -35,6 +36,8 @@ export type PropagationStep = {
   readonly evidenceId: string;
   readonly premiseId: string;
   readonly premiseProbability: number;
+  readonly premiseWeight: number;
+  readonly premiseState: 'true' | 'false';
   readonly before: Gaussian;
   readonly after: Gaussian;
   readonly impact: GaussianImpact;
@@ -70,6 +73,20 @@ function copyImpact(impact: GaussianImpact): GaussianImpact {
   };
 }
 
+function premiseWeight({
+  premise,
+  premiseState,
+}: {
+  readonly premise: PropagationClaimEvaluation;
+  readonly premiseState: 'true' | 'false';
+}): number {
+  if (premiseState === 'true') return premise.probability;
+  return expectedProbability({
+    mean: -premise.posterior.mean,
+    standardDeviation: premise.posterior.standardDeviation,
+  });
+}
+
 /** Evaluates a directed acyclic Gaussian propagation graph. */
 export function evaluatePropagationGraph(
   graph: PropagationGraph,
@@ -98,6 +115,9 @@ export function evaluatePropagationGraph(
     if (!claims.has(item.targetId)) {
       throw new Error(`Evidence ${item.id} references missing target claim ${item.targetId}.`);
     }
+    if (item.premiseState !== undefined && item.premiseState !== 'true' && item.premiseState !== 'false') {
+      throw new RangeError(`Evidence ${item.id} premiseState must be true or false.`);
+    }
     const link = JSON.stringify([item.premiseId, item.targetId]);
     if (links.has(link)) {
       throw new Error(`Duplicate premise-target link: ${item.premiseId} -> ${item.targetId}`);
@@ -121,26 +141,34 @@ export function evaluatePropagationGraph(
       const prior = copyGaussian(claim.prior);
       let posterior = copyGaussian(claim.prior);
       const steps: PropagationStep[] = [];
-      const resolvedEvidence = (evidenceByTarget.get(id) ?? []).map((evidence, index) => ({
-        evidence,
-        index,
-        premise: evaluateClaim(evidence.premiseId),
-      }));
+      const resolvedEvidence = (evidenceByTarget.get(id) ?? []).map((evidence, index) => {
+        const premise = evaluateClaim(evidence.premiseId);
+        const premiseState = evidence.premiseState ?? 'true';
+        return {
+          evidence,
+          index,
+          premise,
+          premiseState,
+          premiseWeight: premiseWeight({ premise, premiseState }),
+        };
+      });
       if (evidenceOrder === 'weakest-first') {
         resolvedEvidence.sort((left, right) => (
-          Math.abs(left.premise.probability * left.evidence.impact.deltaMean)
-          - Math.abs(right.premise.probability * right.evidence.impact.deltaMean)
+          Math.abs(left.premiseWeight * left.evidence.impact.deltaMean)
+          - Math.abs(right.premiseWeight * right.evidence.impact.deltaMean)
           || left.index - right.index
         ));
       }
-      for (const { evidence, premise } of resolvedEvidence) {
+      for (const { evidence, premise, premiseState, premiseWeight: weight } of resolvedEvidence) {
         const before = posterior;
         const impact = copyImpact(evidence.impact);
-        posterior = applyImpact(before, impact, premise.probability);
+        posterior = applyImpact(before, impact, weight);
         steps.push({
           evidenceId: evidence.id,
           premiseId: evidence.premiseId,
           premiseProbability: premise.probability,
+          premiseWeight: weight,
+          premiseState,
           before,
           after: posterior,
           impact,

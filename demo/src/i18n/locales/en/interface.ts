@@ -1,5 +1,5 @@
 import type { ActionMessages } from '../../../main.ts';
-import type { MeasureMessages } from '../../../diagram/evidence-summary.ts';
+import type { MeasureMessages } from '../../index.ts';
 import type { PaletteMessages } from '../../../diagram/color-legend.ts';
 import type { ThemeMessages } from '../../../components/theme-control.ts';
 

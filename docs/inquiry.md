@@ -25,6 +25,7 @@ type Inquiry = {
     relayContributionIds?: readonly string[];
     premiseClaimId: string;
     targetClaimId: string;
+    premiseState?: 'true' | 'false';
     impact: { deltaMean: number; deltaStandardDeviation: number };
   }>;
 };
@@ -35,6 +36,8 @@ The package requires a prior for every claim. Descriptions and source URLs remai
 `contributionId` identifies the canonical source for an argument. `relayContributionIds` may identify declared press or reference sources that relay it. A relay adds provenance without adding another mathematical impact.
 
 Validation rejects duplicate IDs, missing references, cycles, repeated relay IDs, a canonical source repeated as a relay, and duplicate premise-to-target relationships. One premise may feed several targets. Its evaluated posterior is cached and reused by every outgoing relationship.
+
+`premiseState` selects the condition under which an Evidence applies. Omit it for the compatible default, `'true'`. The target receives no effect from the opposite condition.
 
 ## Gaussian replay
 
@@ -48,17 +51,27 @@ $$
 q_P=\operatorname E\left[\frac{1}{1+\exp\left(-\frac{\ln 10}{10}D_P\right)}\right].
 $$
 
+Each relationship selects one applied premise weight:
+
+$$
+w_E=
+\begin{cases}
+q_P & \text{when }\texttt{premiseState} = \texttt{'true'},\\
+1-q_P & \text{when }\texttt{premiseState} = \texttt{'false'}.
+\end{cases}
+$$
+
 For each relationship in the selected replay order, it applies the saved conditional impact to the target:
 
 $$
-\mu_{i+1}=\mu_i+q_P\,\Delta\mu_i,
+\mu_{i+1}=\mu_i+w_E\,\Delta\mu_i,
 \qquad
-\sigma_{i+1}=\left|\sigma_i+q_P\,\Delta\sigma_i\right|.
+\sigma_{i+1}=\left|\sigma_i+w_E\,\Delta\sigma_i\right|.
 $$
 
-Premises are evaluated recursively before their probabilities are used. The displayed credibility interval is the exact Gaussian $\mu\pm3\sigma$ band. For the demo default prior, that band is $[-15,+15]$ dBan and the expected probability is exactly $0.5$.
+Premises are evaluated recursively before their probabilities are used. Replay metadata keeps `premiseProbability` as $q_P$, the probability that the premise Claim is true, and exposes `premiseWeight` as the selected $w_E$. The evaluator obtains the false-condition value from the reflected Gaussian to retain precision near certainty. The displayed credibility interval is the exact Gaussian $\mu\pm3\sigma$ band. For the demo default prior, that band is $[-15,+15]$ dBan and the expected probability is exactly $0.5$.
 
-The default API replay order is the evidence array order. The demo requests `weakest-first`, which sorts relationships by ascending `abs(qP * deltaMean)` after evaluating their premises. Ties keep array order. Since the standard-deviation update is sequential, replay order can affect the final width.
+The default API replay order is the evidence array order. The demo requests `weakest-first`, which sorts relationships by ascending `abs(premiseWeight * deltaMean)` after evaluating their premises. Ties keep array order. Since the standard-deviation update is sequential, replay order can affect the final width.
 
 Editing a conditional force in the demo replaces `deltaMean` and preserves an existing `deltaStandardDeviation`. Newly added relationships start with `deltaStandardDeviation: 0`. Editing a prior or conditional force reevaluates its recursive dependants.
 

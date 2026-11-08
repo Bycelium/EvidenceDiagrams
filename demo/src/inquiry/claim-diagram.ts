@@ -1,11 +1,15 @@
 import {
+  renderCollapsedEvidenceSummary,
+  renderCredibilityAxis,
+  type CredibilityAxisMessages,
+} from '@bycelium/evidence-diagrams-dom';
+import {
   aggregateEvidence,
   credibilityBandBackground,
   evidenceStrengthColor,
   type InquiryClaimEvaluation,
 } from '@bycelium/evidence-diagrams';
 import type { Gaussian } from '@bycelium/evidence-diagrams/propagation-math';
-import { renderCollapsedEvidenceSummary } from '../diagram/evidence-summary.ts';
 import {
   inquiryConnectionGeometry,
   inquiryStepTone,
@@ -13,11 +17,7 @@ import {
   renderInquiryResultant,
   renderInquiryTrajectory,
 } from '../diagram/renderer.ts';
-import {
-  renderCredibilityAxis,
-  type CredibilityAxisMessages,
-} from '../diagram/credibility-axis.ts';
-import { element } from '../dom.ts';
+import { element } from '../html-element.ts';
 import type { InterpolationValues } from '../i18n/index.ts';
 import {
   formatDissonance,
@@ -217,14 +217,18 @@ export function renderClaimDiagram(
   })));
   const resultantArrow = renderInquiryResultant(evaluated, geometry, plotWidth, resultantColor);
   const summary = renderCollapsedEvidenceSummary({
-    weights: evaluated.steps.map((step) => step.after.mean - step.before.mean),
-    displayExtent: 2 * saturationThresholdDecibans,
-    formatWeight: (value) => formatJeffreysStrength(presentationI18n, value),
+    meanChanges: evaluated.steps.map((step) => step.after.mean - step.before.mean),
+    extentDecibans: 2 * saturationThresholdDecibans,
+    formatWeight: (value) => `${formatJeffreysStrength(presentationI18n, value)} (${presentationI18n.number(value, { maximumFractionDigits: 1 })}\u00a0dBan)`,
     oppositionLabel: palette.against,
     supportLabel: palette.for,
-    dissonanceLabel,
-    formatDissonance: (value) => formatDissonance(presentationI18n, value),
-    ariaLabel: `${palette.against}: ${presentationI18n.number((meanSummary.absoluteWeightDecibans - meanSummary.netWeightDecibans) / 2, { maximumFractionDigits: 0 })}. ${dissonanceLabel}: ${formatDissonance(presentationI18n, meanSummary.dissonance)}. ${palette.for}: ${presentationI18n.number((meanSummary.absoluteWeightDecibans + meanSummary.netWeightDecibans) / 2, { maximumFractionDigits: 0 })}.`,
+    formatDirectionalLabel: (direction, count) => `${direction} (${presentationI18n.number(count)})`,
+    middleMetric: {
+      label: dissonanceLabel,
+      value: formatDissonance(presentationI18n, meanSummary.dissonance),
+      zero: meanSummary.dissonance === 0,
+    },
+    ariaLabel: `${palette.against}: ${presentationI18n.number((meanSummary.absoluteWeightDecibans - meanSummary.netWeightDecibans) / 2, { maximumFractionDigits: 1 })}\u00a0dBan. ${dissonanceLabel}: ${formatDissonance(presentationI18n, meanSummary.dissonance)}. ${palette.for}: ${presentationI18n.number((meanSummary.absoluteWeightDecibans + meanSummary.netWeightDecibans) / 2, { maximumFractionDigits: 1 })}\u00a0dBan.`,
   });
   const trailToggle = element('button', {
     type: 'button',

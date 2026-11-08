@@ -28,3 +28,4 @@ jobs:
       - run: pnpm test
       - run: pnpm typecheck
       - run: pnpm test:package
+      - run: pnpm test:dom-package

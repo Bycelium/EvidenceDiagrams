@@ -16,6 +16,7 @@
             packages = [
               pkgs.nodejs_24
               pkgs.direnv
+              pkgs.ffmpeg
               (pkgs.pnpm.override { nodejs-slim = pkgs.nodejs_24; })
             ];
           };

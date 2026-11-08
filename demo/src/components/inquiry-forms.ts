@@ -6,9 +6,11 @@ import {
   type InquirySession,
 } from '../state.ts';
 import { claimById, contributionById } from '../inquiry/lookups.ts';
-import { element, safeHttpUrl } from '../dom.ts';
+import { element } from '../html-element.ts';
+import { safeHttpUrl } from '../safe-http-url.ts';
 import type { I18n } from '../i18n/index.ts';
 import { createConditionalStrengthControl, type ConditionalMessages } from './conditional-strength-control.ts';
+import { createPremiseConditionControl } from './premise-condition-control.ts';
 
 export interface FormMessages {
   readonly requiredText: string;
@@ -24,6 +26,11 @@ export interface FormMessages {
   readonly premiseAssertion: string;
   readonly useExistingPremise: string;
   readonly premiseDescription: string;
+  readonly premiseCondition: string;
+  readonly premiseTrue: string;
+  readonly premiseFalse: string;
+  readonly changeToTrue: string;
+  readonly changeToFalse: string;
   readonly addEvidence: string;
   readonly editDetails: string;
   readonly save: string;
@@ -134,6 +141,13 @@ export function createInquiryForms(options: InquiryFormsOptions): InquiryForms {
     const sourceTitle = textField(messages.sourceReference, 'sourceTitle', { required: true });
     const sourceUrl = textField(messages.sourceUrl, 'sourceUrl', { type: 'url', required: true });
     const sourceLocator = textField(messages.sourceLocator, 'sourceLocator');
+    const stateChoice = createPremiseConditionControl({
+      label: messages.premiseCondition,
+      trueLabel: messages.premiseTrue,
+      falseLabel: messages.premiseFalse,
+      changeToTrue: messages.changeToTrue,
+      changeToFalse: messages.changeToFalse,
+    });
     const conditionalControl = createConditionalStrengthControl({
       messages: conditionalMessages,
       formatMessage,
@@ -153,7 +167,7 @@ export function createInquiryForms(options: InquiryFormsOptions): InquiryForms {
       element('h3', { textContent: messages.premise }), premiseTitle.label, premiseDescription.label, reuse,
     ]);
     const effectSection = element('section', { className: 'inquiry-add-section inquiry-add-effect' }, [
-      element('h3', { textContent: conditionalMessages.ifThisWereTrue }), conditionalControl.element,
+      element('h3', { textContent: messages.premiseCondition }), stateChoice.element, conditionalControl.element,
     ]);
     const sourceSection = element('section', { className: 'inquiry-add-section inquiry-add-source' }, [
       element('h3', { textContent: messages.source }), sourceTitle.label, sourceUrl.label, sourceLocator.label,
@@ -172,6 +186,7 @@ export function createInquiryForms(options: InquiryFormsOptions): InquiryForms {
         premiseTitle: premiseTitle.input.value,
         premiseDescription: premiseDescription.input.value,
         impact: { deltaMean: conditionalControl.value(), deltaStandardDeviation: 0 },
+        premiseState: stateChoice.value(),
       });
       return commitCandidate(candidate, premiseSelect);
     });
@@ -217,10 +232,24 @@ export function createInquiryForms(options: InquiryFormsOptions): InquiryForms {
     const item = session.inquiry.evidence.find(({ id }) => id === evidenceId);
     if (!item) throw new Error(`Unknown evidence: ${evidenceId}`);
     const source = contributionById(session.inquiry, item.contributionId);
-    showDialog(messages.editDetails, messages.save, sourceForm(source), () => {
+    const stateChoice = createPremiseConditionControl({
+      label: messages.premiseCondition,
+      initialState: item.premiseState ?? 'true',
+      trueLabel: messages.premiseTrue,
+      falseLabel: messages.premiseFalse,
+      changeToTrue: messages.changeToTrue,
+      changeToFalse: messages.changeToFalse,
+    });
+    const condition = element('section', { className: 'inquiry-add-section inquiry-add-effect' }, [
+      element('h3', { textContent: messages.premiseCondition }), stateChoice.element,
+    ]);
+    showDialog(messages.editDetails, messages.save, [...sourceForm(source), condition], () => {
       if (!validateSource(dialogForm) || !validateTrimmed(formInput(dialogForm, 'sourceTitle'))) return false;
       const candidate = candidateSession();
-      editInquiryEvidence(candidate, evidenceId, { contribution: sourceFromForm(dialogForm) });
+      editInquiryEvidence(candidate, evidenceId, {
+        contribution: sourceFromForm(dialogForm),
+        premiseState: stateChoice.value(),
+      });
       return commitCandidate(candidate, formInput(dialogForm, 'sourceTitle'));
     });
   }

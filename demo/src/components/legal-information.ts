@@ -1,4 +1,4 @@
-import { element } from '../dom.ts';
+import { element } from '../html-element.ts';
 import type { I18n } from '../i18n/index.ts';
 
 const REGISTRY_URL = 'https://annuaire-entreprises.data.gouv.fr/entreprise/bycelium-919837187';

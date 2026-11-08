@@ -244,6 +244,369 @@ Apache License
     }
   </script>
   <style>
+:where(.inquiry-flow-axis, .collapsed-evidence-summary, .inquiry-evidence-impact-preview) {
+  --ed-dom-text: #172033;
+  --ed-dom-muted: #526478;
+  --ed-dom-heading: #1f3147;
+  --ed-dom-surface: #f8fafc;
+  --ed-dom-axis: #94a3b8;
+  --ed-dom-axis-strong: #64748b;
+  --ed-dom-center: #334155;
+  --ed-dom-opposition: #b91c1c;
+  --ed-dom-opposition-arrow: #ef4444;
+  --ed-dom-support: #15803d;
+  --ed-dom-support-arrow: #22c55e;
+  --ed-dom-dissonance: #a16207;
+  --ed-dom-summary-border: #d5dde7;
+  --ed-dom-reset-background: rgb(248 250 252 / 88%);
+  --ed-dom-impact-connector: #475569;
+  --ed-dom-weight-tint: #f0f9ff;
+  --ed-dom-weight-border: #bae6fd;
+  --ed-dom-weight-ink: #075985;
+  --ed-dom-handle-background: rgb(248 250 252 / 80%);
+  --ed-dom-handle-hover-background: #fff;
+  --ed-dom-handle-shadow: 0 1px 3px rgb(15 23 42 / 18%);
+}
+
+.inquiry-flow-axis .prior-handle {
+  position: absolute;
+  z-index: 5;
+  top: calc((var(--credibility-band-height, .625rem) - 2.75rem) / 2);
+  width: 2.75rem;
+  height: 2.75rem;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: ew-resize;
+  transform: none;
+  touch-action: none;
+}
+.inquiry-flow-axis .prior-handle:hover,
+.inquiry-flow-axis .prior-handle:active { background: transparent; }
+.inquiry-flow-axis .prior-handle:focus-visible { outline: 2px solid var(--ed-dom-text); outline-offset: -2px; }
+.inquiry-flow-axis .prior-handle::before {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 22px;
+  border: 0 solid var(--prior-color, #0f172a);
+  content: '';
+  transform: translateY(-50%);
+}
+.inquiry-flow-axis .prior-handle::after {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 18px;
+  border: 1px solid color-mix(in srgb, var(--prior-color, #0f172a) 35%, transparent);
+  border-radius: 4px;
+  background-color: var(--ed-dom-handle-background);
+  background-image:
+    radial-gradient(circle at 35% 28%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 65% 28%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 35% 50%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 65% 50%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 35% 72%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 65% 72%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px);
+  content: '';
+  transform: translateY(-50%);
+}
+.inquiry-flow-axis .prior-handle-min::before {
+  left: var(--prior-anchor, 50%);
+  border-top-width: 2px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+}
+.inquiry-flow-axis .prior-handle-max::before {
+  left: calc(var(--prior-anchor, 50%) - 9px);
+  border-top-width: 2px;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+}
+.inquiry-flow-axis .prior-handle-min::after { left: calc(var(--prior-anchor, 50%) - 15px); }
+.inquiry-flow-axis .prior-handle-max::after { left: calc(var(--prior-anchor, 50%) + 5px); }
+.inquiry-flow-axis .prior-handle:hover::after,
+.inquiry-flow-axis .prior-handle:active::after,
+.inquiry-flow-axis .prior-handle:focus-visible::after {
+  border-color: var(--prior-color, #0f172a);
+  background-color: var(--ed-dom-handle-hover-background);
+  box-shadow: var(--ed-dom-handle-shadow);
+}
+
+.collapsed-evidence-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-rows: auto 1rem;
+  align-items: center;
+  gap: .2rem 1rem;
+  min-width: 0;
+  padding: .45rem .6rem;
+  border: 1px solid var(--ed-dom-summary-border);
+  border-radius: 9px;
+  background: var(--ed-dom-surface);
+}
+.collapsed-evidence-summary-total {
+  display: grid;
+  gap: .05rem;
+  min-width: 0;
+  font-size: .72rem;
+  line-height: 1.2;
+}
+.collapsed-evidence-summary-total.is-opposition { grid-column: 1; grid-row: 1; color: var(--ed-dom-opposition); text-align: left; }
+.collapsed-evidence-summary-total.is-dissonance { grid-column: 2; grid-row: 1; color: var(--ed-dom-dissonance); text-align: center; }
+.collapsed-evidence-summary-total.is-dissonance.is-zero { color: var(--ed-dom-muted); }
+.collapsed-evidence-summary-total.is-support { grid-column: 3; grid-row: 1; color: var(--ed-dom-support); text-align: right; }
+.collapsed-evidence-summary-label { color: var(--ed-dom-muted); font-weight: 700; }
+.collapsed-evidence-summary-value { font-variant-numeric: tabular-nums; font-weight: 850; }
+.collapsed-evidence-summary-line {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  grid-template-columns: 1fr 1px 1fr;
+  align-items: center;
+  height: 1rem;
+}
+.collapsed-evidence-summary-arrow {
+  display: block;
+  height: var(--credibility-band-height, .625rem);
+  background: currentcolor;
+}
+.collapsed-evidence-summary-arrow[hidden] { display: none; }
+.collapsed-evidence-summary-arrow.is-opposition {
+  justify-self: end;
+  width: var(--collapsed-opposition);
+  color: var(--ed-dom-opposition-arrow);
+  clip-path: polygon(100% 0, min(1.125rem, 40%) 0, 0 50%, min(1.125rem, 40%) 100%, 100% 100%);
+}
+.collapsed-evidence-summary-arrow.is-support {
+  grid-column: 3;
+  justify-self: start;
+  width: var(--collapsed-support);
+  color: var(--ed-dom-support-arrow);
+  clip-path: polygon(0 0, calc(100% - min(1.125rem, 40%)) 0, 100% 50%, calc(100% - min(1.125rem, 40%)) 100%, 0 100%);
+}
+.collapsed-evidence-summary-center { grid-column: 2; grid-row: 1; width: 1px; height: 1rem; background: var(--ed-dom-center); }
+
+.inquiry-flow-axis {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 .6rem;
+  color: var(--ed-dom-muted);
+  font-size: .75rem;
+}
+.inquiry-flow-axis > strong { color: var(--ed-dom-heading); font-size: .9rem; }
+.inquiry-flow-axis.has-prior-reset { position: relative; }
+.inquiry-flow-axis.has-prior-reset > .inquiry-flow-axis-value { margin-right: 2.2rem; }
+.inquiry-prior-reset {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  right: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid var(--ed-dom-axis);
+  border-radius: 7px;
+  color: var(--ed-dom-muted);
+  background: var(--ed-dom-reset-background);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.inquiry-prior-reset:hover { border-color: var(--ed-dom-axis-strong); color: var(--ed-dom-heading); }
+.inquiry-prior-reset:focus-visible { outline: 2px solid var(--ed-dom-center); outline-offset: -2px; }
+.inquiry-flow-axis-track {
+  position: relative;
+  grid-column: 1 / -1;
+  height: 1.25rem;
+  border-top: 1px solid var(--ed-dom-axis);
+  background: var(--ed-dom-surface);
+}
+.inquiry-prior-handle { z-index: 3; }
+.inquiry-prior-handle.is-lower { transform: translateX(-100%); }
+.inquiry-prior-handle.is-upper { transform: translateX(0); }
+.inquiry-flow-axis .prior-handle.is-lower.is-inward { transform: translateX(0); }
+.inquiry-flow-axis .prior-handle.is-upper.is-inward { transform: translateX(-100%); }
+.inquiry-flow-axis .prior-handle-min.is-inward::after { left: calc(var(--prior-anchor, 0%) + 5px); }
+.inquiry-flow-axis .prior-handle-max.is-inward::after { left: calc(var(--prior-anchor, 100%) - 15px); }
+.inquiry-prior-handle:focus-visible { outline: 2px solid var(--ed-dom-text); outline-offset: 2px; }
+.inquiry-flow-axis-band,
+.inquiry-flow-axis-track.posterior-track .posterior-band {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  height: var(--credibility-band-height, .625rem);
+  min-width: 2px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.inquiry-flow-axis-track.posterior-track { height: 1.25rem; }
+.inquiry-flow-axis-track.posterior-track.is-exact::before,
+.inquiry-flow-axis-track.posterior-track.is-exact::after {
+  position: absolute;
+  z-index: 2;
+  inset: auto;
+  left: var(--posterior-x, 50%);
+  border: 0;
+  background: var(--posterior-minimum-color, #0f172a);
+  content: '';
+  transform: translateX(-50%);
+}
+.inquiry-flow-axis-track.posterior-track.is-exact::before { top: 0; width: 2px; height: .75rem; }
+.inquiry-flow-axis-track.posterior-track.is-exact::after { top: 0; width: 1rem; height: 2px; }
+.inquiry-flow-axis-value {
+  display: inline-flex;
+  align-items: baseline;
+  justify-self: end;
+  width: max-content;
+  max-width: 100%;
+  gap: .2em;
+  color: var(--ed-dom-text);
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+.inquiry-flow-axis-value.is-exact { display: inline; }
+.inquiry-flow-axis-separator { color: var(--ed-dom-axis-strong); text-align: center; }
+.inquiry-flow-axis-break {
+  position: absolute;
+  z-index: 3;
+  top: -.62rem;
+  padding: 0 .14rem;
+  color: var(--ed-dom-text);
+  background: var(--ed-dom-surface);
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: -.16em;
+  line-height: 1;
+  transform: translateX(-50%);
+}
+.inquiry-flow-axis-break.is-minimum { left: 40%; }
+.inquiry-flow-axis-break.is-maximum { left: 60%; }
+.inquiry-flow-ruler { position: relative; grid-column: 1 / -1; height: 1.2rem; margin: 0; color: var(--ed-dom-axis-strong); font-size: .68rem; }
+.inquiry-flow-ruler-tick { position: absolute; inset: 0 auto 0 0; width: 0; }
+.inquiry-flow-ruler-tick::after { position: absolute; bottom: 0; left: 0; height: .2rem; border-left: 1px solid var(--ed-dom-axis); content: ''; }
+.inquiry-flow-ruler-tick.is-major::after { height: .32rem; }
+.inquiry-flow-ruler-label { position: absolute; top: 0; left: 0; transform: translateX(-50%); white-space: nowrap; }
+.inquiry-flow-ruler-label.is-first { transform: none; }
+.inquiry-flow-ruler-label.is-last { transform: translateX(-100%); }
+.inquiry-flow-ruler-label.is-outward-left { transform: translateX(-100%); }
+.inquiry-flow-ruler-label.is-outward-right { transform: none; }
+.inquiry-flow-ruler.is-relative-decibans .inquiry-flow-ruler-label.is-first,
+.inquiry-flow-ruler.is-relative-decibans .inquiry-flow-ruler-label.is-last { transform: translateX(-50%); }
+.inquiry-flow-ruler.is-secondary { height: 1.45rem; }
+.inquiry-flow-ruler.is-secondary .inquiry-flow-ruler-tick::after { top: 0; bottom: auto; }
+.inquiry-flow-ruler.is-secondary .inquiry-flow-ruler-label { top: .4rem; }
+
+.inquiry-evidence-impact-preview { display: grid; min-width: 0; gap: .35rem; margin-top: .2rem; }
+.inquiry-evidence-impact-preview .inquiry-flow-ruler { min-width: 0; }
+.inquiry-evidence-impact-axis .inquiry-flow-axis-track.posterior-track {
+  width: auto;
+  min-width: 0;
+  height: var(--impact-track-height);
+  border-top: 0;
+  background: linear-gradient(var(--impact-axis-line, var(--ed-dom-axis)), var(--impact-axis-line, var(--ed-dom-axis))) 0 var(--impact-axis-top) / 100% 1px no-repeat;
+}
+.inquiry-evidence-impact-axis .inquiry-flow-axis-track.posterior-track .posterior-band { top: var(--impact-axis-top); height: var(--impact-band-height, .625rem); }
+.inquiry-impact-overlay { position: absolute; z-index: 3; inset: 0; pointer-events: none; --impact-connector-color: var(--ed-dom-impact-connector); }
+.inquiry-impact-drawing { position: absolute; z-index: 0; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; }
+.inquiry-impact-origin-guide { stroke: var(--impact-connector-color); stroke-width: 1.5; stroke-dasharray: 2 3; opacity: .72; vector-effect: non-scaling-stroke; }
+.inquiry-impact-conditional-connector,
+.inquiry-impact-attenuation-connector { fill: var(--impact-connector-color); }
+.inquiry-impact-arrow.is-support { fill: var(--ed-dom-support-arrow); }
+.inquiry-impact-arrow.is-opposition { fill: var(--ed-dom-opposition-arrow); }
+.inquiry-impact-arrow.is-neutral { fill: var(--ed-dom-axis-strong); }
+.inquiry-impact-weight-extent { fill: color-mix(in srgb, var(--ed-dom-weight-tint) 72%, var(--ed-dom-weight-border)); }
+.inquiry-impact-weight-fill { fill: var(--ed-dom-weight-ink); }
+.inquiry-impact-weight-frame { fill: var(--ed-dom-weight-border); }
+.inquiry-impact-conditional-label,
+.inquiry-impact-weight-label {
+  position: absolute;
+  z-index: 1;
+  max-width: calc(50% - .2rem);
+  color: var(--ed-dom-muted);
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: .8rem;
+}
+.inquiry-impact-conditional-label.is-rightward,
+.inquiry-impact-weight-label.is-rightward { right: calc(50% + .2rem); text-align: right; }
+.inquiry-impact-conditional-label.is-leftward,
+.inquiry-impact-weight-label.is-leftward { left: calc(50% + .2rem); text-align: left; }
+.inquiry-impact-conditional-label { top: var(--impact-conditional-center); transform: translateY(-50%); }
+.inquiry-impact-weight-label { top: var(--impact-weight-center); transform: translateY(-50%); }
+.inquiry-impact-weight-percent { color: var(--ed-dom-weight-ink); font: inherit; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.inquiry-impact-weight-applied { white-space: nowrap; }
+.inquiry-impact-conclusion { margin: .25rem 0 0; color: var(--ed-dom-muted); font-size: 1rem; font-weight: 650; line-height: 1.3; }
+.inquiry-impact-conclusion-result { color: color-mix(in srgb, var(--impact-result-color, var(--ed-dom-center)) 52%, var(--ed-dom-text)); font-size: 1.06rem; font-weight: 800; }
+
+@media (max-width: 520px) {
+  .collapsed-evidence-summary { gap: .15rem .5rem; padding-inline: .45rem; }
+  .collapsed-evidence-summary-label { font-size: .66rem; }
+  .inquiry-impact-conclusion { font-size: clamp(.75rem, 3.7vw, 1rem); }
+  .inquiry-impact-conclusion-result { font-size: inherit; }
+}
+
+:root[data-theme="dark"] :where(.inquiry-flow-axis, .collapsed-evidence-summary, .inquiry-evidence-impact-preview) {
+  --ed-dom-text: #dbe7f3;
+  --ed-dom-muted: #aeb5bd;
+  --ed-dom-heading: #dbe7f3;
+  --ed-dom-surface: #1b1e22;
+  --ed-dom-axis: #64748b;
+  --ed-dom-axis-strong: #94a3b8;
+  --ed-dom-center: #cbd5e1;
+  --ed-dom-opposition: #f87171;
+  --ed-dom-opposition-arrow: #f87171;
+  --ed-dom-support: #4ade80;
+  --ed-dom-support-arrow: #4ade80;
+  --ed-dom-dissonance: #fde047;
+  --ed-dom-summary-border: transparent;
+  --ed-dom-reset-background: rgb(255 255 255 / 3%);
+  --ed-dom-impact-connector: #cbd5e1;
+  --ed-dom-weight-tint: #172f3d;
+  --ed-dom-weight-border: #426f86;
+  --ed-dom-weight-ink: #7dd3fc;
+  --ed-dom-handle-background: rgb(20 23 27 / 90%);
+  --ed-dom-handle-hover-background: #292e35;
+  --ed-dom-handle-shadow: 0 1px 4px rgb(0 0 0 / 45%);
+}
+:root[data-theme="dark"] .inquiry-impact-conclusion-result { color: color-mix(in srgb, var(--impact-result-color, #94a3b8) 72%, #f8fafc); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) :where(.inquiry-flow-axis, .collapsed-evidence-summary, .inquiry-evidence-impact-preview) {
+    --ed-dom-text: #dbe7f3;
+    --ed-dom-muted: #aeb5bd;
+    --ed-dom-heading: #dbe7f3;
+    --ed-dom-surface: #1b1e22;
+    --ed-dom-axis: #64748b;
+    --ed-dom-axis-strong: #94a3b8;
+    --ed-dom-center: #cbd5e1;
+    --ed-dom-opposition: #f87171;
+    --ed-dom-opposition-arrow: #f87171;
+    --ed-dom-support: #4ade80;
+    --ed-dom-support-arrow: #4ade80;
+    --ed-dom-dissonance: #fde047;
+    --ed-dom-summary-border: transparent;
+    --ed-dom-reset-background: rgb(255 255 255 / 3%);
+    --ed-dom-impact-connector: #cbd5e1;
+    --ed-dom-weight-tint: #172f3d;
+    --ed-dom-weight-border: #426f86;
+    --ed-dom-weight-ink: #7dd3fc;
+    --ed-dom-handle-background: rgb(20 23 27 / 90%);
+    --ed-dom-handle-hover-background: #292e35;
+    --ed-dom-handle-shadow: 0 1px 4px rgb(0 0 0 / 45%);
+  }
+  :root:not([data-theme="light"]) .inquiry-impact-conclusion-result { color: color-mix(in srgb, var(--impact-result-color, #94a3b8) 72%, #f8fafc); }
+}
+
 :root {
   color-scheme: light;
   font: 16px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -323,85 +686,6 @@ h2 {
   text-transform: uppercase;
 }
 
-.prior-handle {
-  position: absolute;
-  z-index: 5;
-  top: 0;
-  width: 1.9rem;
-  height: 1.9rem;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  cursor: ew-resize;
-  transform: none;
-  touch-action: none;
-}
-
-.prior-handle:hover,
-.prior-handle:active {
-  background: transparent;
-}
-
-.prior-handle:focus-visible {
-  outline: 2px solid #0f172a;
-  outline-offset: -2px;
-  background: transparent;
-}
-
-.prior-handle::before {
-  position: absolute;
-  top: 4px;
-  width: 9px;
-  height: 22px;
-  border: 0 solid var(--prior-color, #0f172a);
-  content: '';
-}
-
-.prior-handle::after {
-  position: absolute;
-  top: 6px;
-  width: 10px;
-  height: 18px;
-  border: 1px solid color-mix(in srgb, var(--prior-color, #0f172a) 35%, transparent);
-  border-radius: 4px;
-  background-color: rgb(248 250 252 / 80%);
-  background-image:
-    radial-gradient(circle at 35% 28%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 65% 28%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 35% 50%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 65% 50%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 35% 72%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 65% 72%, var(--prior-color, #0f172a) 0 1px, transparent 1.5px);
-  content: '';
-}
-
-.prior-handle-min::before {
-  left: var(--prior-anchor, 50%);
-  border-top-width: 2px;
-  border-bottom-width: 2px;
-  border-left-width: 2px;
-}
-
-.prior-handle-max::before {
-  left: calc(var(--prior-anchor, 50%) - 9px);
-  border-top-width: 2px;
-  border-right-width: 2px;
-  border-bottom-width: 2px;
-}
-
-.prior-handle-min::after { left: calc(var(--prior-anchor, 50%) - 15px); }
-.prior-handle-max::after { left: calc(var(--prior-anchor, 50%) + 5px); }
-
-.prior-handle:hover::after,
-.prior-handle:active::after,
-.prior-handle:focus-visible::after {
-  border-color: var(--prior-color, #0f172a);
-  background-color: #fff;
-  box-shadow: 0 1px 3px rgb(15 23 42 / 18%);
-}
-
 button {
   min-height: 2.45rem;
   padding: .48rem .72rem;
@@ -447,87 +731,6 @@ textarea:focus-visible {
 .language-menu[hidden] { display: none; }
 .language-menu button { padding: .35rem .5rem; border: 0; border-radius: 5px; background: transparent; color: #1f3147; font-weight: 750; text-align: left; }
 .language-menu button[aria-checked="true"] { background: #e2e8f0; }
-
-.collapsed-evidence-summary {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  grid-template-rows: auto 1rem;
-  align-items: center;
-  gap: .2rem 1rem;
-  min-width: 0;
-  padding: .45rem .6rem;
-  border: 1px solid #d5dde7;
-  border-radius: 9px;
-  background: #f8fafc;
-}
-
-.collapsed-evidence-summary-total {
-  display: grid;
-  gap: .05rem;
-  min-width: 0;
-  font-size: .72rem;
-  line-height: 1.2;
-}
-
-.collapsed-evidence-summary-total.is-opposition { grid-column: 1; grid-row: 1; text-align: left; color: #b91c1c; }
-.collapsed-evidence-summary-total.is-dissonance { grid-column: 2; grid-row: 1; text-align: center; color: #a16207; }
-.collapsed-evidence-summary-total.is-dissonance.is-zero { color: #526478; }
-.collapsed-evidence-summary-total.is-support { grid-column: 3; grid-row: 1; text-align: right; color: #15803d; }
-.collapsed-evidence-summary-label { color: #526478; font-weight: 700; }
-.collapsed-evidence-summary-value { font-variant-numeric: tabular-nums; font-weight: 850; }
-
-.collapsed-evidence-summary-line {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-row: 2;
-  grid-template-columns: 1fr 1px 1fr;
-  align-items: center;
-  height: 1rem;
-}
-
-.collapsed-evidence-summary-arrow {
-  display: flex;
-  align-items: center;
-  height: 1rem;
-}
-.collapsed-evidence-summary-arrow[hidden] { display: none; }
-.collapsed-evidence-summary-arrow.is-opposition {
-  justify-self: end;
-  width: var(--collapsed-opposition);
-  color: #ef4444;
-}
-.collapsed-evidence-summary-arrow.is-support {
-  grid-column: 3;
-  justify-self: start;
-  width: var(--collapsed-support);
-  color: #22c55e;
-}
-.collapsed-evidence-summary-arrow-body {
-  flex: 1 1 auto;
-  height: auto;
-  max-height: 4px;
-  aspect-ratio: 4 / 1;
-  background: currentcolor;
-}
-.collapsed-evidence-summary-arrow-tip {
-  flex: 0 0 min(.45rem, 40%);
-  width: min(.45rem, 40%);
-  height: auto;
-  aspect-ratio: 1;
-  background: currentcolor;
-}
-.collapsed-evidence-summary-arrow.is-opposition .collapsed-evidence-summary-arrow-tip {
-  clip-path: polygon(100% 0, 0 50%, 100% 100%);
-}
-.collapsed-evidence-summary-arrow.is-support .collapsed-evidence-summary-arrow-tip {
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-}
-.collapsed-evidence-summary-center { grid-column: 2; grid-row: 1; width: 1px; height: 1rem; background: #334155; }
-
-@media (max-width: 420px) {
-  .collapsed-evidence-summary { gap: .15rem .5rem; padding-inline: .45rem; }
-  .collapsed-evidence-summary-label { font-size: .66rem; }
-}
 
 @media (max-width: 520px) {
   main {
@@ -730,17 +933,6 @@ button.primary:hover { background: #eef3f7; }
 .inquiry-diagram > .inquiry-flow-axis,
 .inquiry-flow-add { position: relative; z-index: 2; }
 
-.inquiry-flow-axis {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: .2rem .6rem;
-  color: #526478;
-  font-size: .75rem;
-}
-
-.inquiry-flow-axis > strong { color: #1f3147; font-size: .9rem; }
-
 .inquiry-flow-axis.has-trail-toggle { position: relative; z-index: 4; }
 .inquiry-flow-axis.has-trail-toggle > .inquiry-trail-toggle { position: absolute; z-index: 4; top: calc(100% - 3.25rem); left: 1.25rem; width: 2.75rem; min-height: 2.75rem; border: 2px solid #475569; border-radius: 7px; color: #1f3147; background: #fff; box-shadow: 0 1px 4px rgb(15 23 42 / 22%); }
 .inquiry-flow-axis.has-trail-toggle > .inquiry-trail-toggle:hover { border-color: #172033; background: #eef3f7; }
@@ -750,60 +942,7 @@ button.primary:hover { background: #eef3f7; }
 .inquiry-flow-axis.is-compact-pair.is-prior > .inquiry-flow-axis-value { grid-area: value; }
 .inquiry-flow-axis.is-compact-pair.is-prior > .inquiry-flow-ruler { display: none; }
 .inquiry-flow-axis.is-compact-pair.is-prior > .inquiry-flow-axis-track { grid-area: track; }
-.inquiry-flow-axis.is-prior.has-prior-reset { position: relative; }
-.inquiry-prior-reset { position: absolute; z-index: 4; top: 0; right: 0; display: inline-grid; place-items: center; width: 1.9rem; height: 1.9rem; padding: 0; border: 1px solid #94a3b8; border-radius: 7px; color: #475569; background: rgb(248 250 252 / 88%); font-size: 1.2rem; line-height: 1; }
-.inquiry-flow-axis.is-prior.has-prior-reset > .inquiry-flow-axis-value { margin-right: 2.2rem; }
-.inquiry-prior-reset:hover { border-color: #64748b; color: #1f3147; background: #eef3f7; }
-.inquiry-prior-reset:focus-visible { outline: 2px solid #334155; outline-offset: -2px; }
 .inquiry-flow-axis.is-compact-pair.is-prior > .inquiry-prior-reset { top: auto; bottom: 0; }
-
-.inquiry-flow-axis-track {
-  position: relative;
-  grid-column: 1 / -1;
-  height: 1.5rem;
-  border-block: 1px solid #94a3b8;
-  background: #f8fafc;
-}
-
-.inquiry-prior-handle {
-  z-index: 3;
-  top: -.625rem;
-  width: 2.75rem;
-  height: 2.75rem;
-}
-
-.inquiry-prior-handle.is-lower { transform: translateX(-100%); }
-.inquiry-prior-handle.is-upper { transform: translateX(0); }
-.prior-handle.is-lower.is-inward { transform: translateX(0); }
-.prior-handle.is-upper.is-inward { transform: translateX(-100%); }
-.prior-handle-min.is-inward::after { left: calc(var(--prior-anchor, 0%) + 5px); }
-.prior-handle-max.is-inward::after { left: calc(var(--prior-anchor, 100%) - 15px); }
-.inquiry-prior-handle:focus-visible { outline: 2px solid #0f172a; outline-offset: 2px; }
-
-.inquiry-flow-axis-track::after { position: absolute; inset: 0 auto 0 50%; border-left: 1px solid rgb(15 23 42 / 32%); content: ''; }
-.inquiry-flow-axis-band { position: absolute; z-index: 1; top: .48rem; height: .48rem; min-width: 2px; border: 1px solid #64748b; background: rgb(203 213 225 / 48%); }
-.inquiry-flow-axis-track.posterior-track { height: 1.875rem; }
-.inquiry-flow-axis-track.posterior-track .posterior-band { top: .625rem; height: .625rem; border: 1px solid rgb(15 23 42 / 45%); background: transparent; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 30%); }
-.inquiry-flow-axis-track.posterior-track.is-exact::before,
-.inquiry-flow-axis-track.posterior-track.is-exact::after { position: absolute; z-index: 2; inset: auto; left: var(--posterior-x, 50%); border: 0; background: var(--posterior-minimum-color, #0f172a); content: ''; transform: translateX(-50%); }
-.inquiry-flow-axis-track.posterior-track.is-exact::before { top: .25rem; width: 2px; height: 1.375rem; }
-.inquiry-flow-axis-track.posterior-track.is-exact::after { top: .25rem; width: 1.125rem; height: 2px; box-shadow: 0 1.25rem 0 var(--posterior-minimum-color, #0f172a); }
-.inquiry-flow-axis-band.is-support { border-color: #15803d; background: #86efac; }
-.inquiry-flow-axis-band.is-oppose { border-color: #dc2626; background: #fca5a5; }
-.inquiry-flow-axis-band.is-neutral { border-color: #64748b; background: #cbd5e1; }
-.inquiry-flow-axis-value { display: inline-flex; align-items: baseline; justify-self: end; width: max-content; max-width: 100%; gap: .2em; color: #172033; font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-.inquiry-flow-axis-value.is-exact { display: inline; }
-.inquiry-flow-axis-separator { color: #64748b; text-align: center; }
-.inquiry-flow-clipped { position: absolute; z-index: 4; top: .05rem; color: #172033; font-size: 1.05rem; font-weight: 900; line-height: 1.25rem; }
-.inquiry-flow-clipped.is-minimum { left: .15rem; }
-.inquiry-flow-clipped.is-maximum { right: .15rem; }
-
-.inquiry-flow-ruler { position: relative; grid-column: 1 / -1; height: 1rem; margin: 0; color: #64748b; font-size: .72rem; }
-.inquiry-flow-ruler span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
-.inquiry-flow-ruler span.is-first { transform: none; }
-.inquiry-flow-ruler span.is-last { transform: translateX(-100%); }
-.inquiry-flow-ruler span::before { display: block; width: 0; height: .22rem; margin: 0 auto .05rem; border-left: 1px solid #94a3b8; content: ''; }
-.inquiry-flow-ruler span.is-unlabelled::before { height: .14rem; }
 
 .inquiry-trail-stage { position: relative; z-index: 2; display: grid; margin: .15rem 0 .35rem; }
 .inquiry-trail-stage .collapsed-evidence-summary { position: relative; z-index: 2; width: 100%; padding-inline: 0; border: 0; border-radius: 0; background: transparent; }
@@ -848,7 +987,7 @@ button.primary:hover { background: #eef3f7; }
 .inquiry-flow-point { fill: #334155; }
 
 .inquiry-resultant-strength { padding: .16rem .45rem; border: 1px solid color-mix(in srgb, var(--result-color, #9ca3af) 65%, #64748b); border-left: 4px solid var(--result-color, #9ca3af); border-radius: 999px; color: #0f172a; background: color-mix(in srgb, var(--result-color, #9ca3af) 22%, transparent); font-size: .86rem; font-weight: 850; }
-.inquiry-resultant-arrow { position: absolute; z-index: 2; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.inquiry-resultant-arrow { position: absolute; z-index: 2; inset: 0 auto auto 0; display: block; width: 100%; height: var(--credibility-band-height, .625rem); overflow: visible; pointer-events: none; }
 .inquiry-resultant-line { stroke-width: 8; vector-effect: non-scaling-stroke; }
 .inquiry-resultant-line.is-support, .inquiry-resultant-head.is-support { stroke: #15803d; fill: #15803d; }
 .inquiry-resultant-line.is-oppose, .inquiry-resultant-head.is-oppose { stroke: #dc2626; fill: #dc2626; }
@@ -1041,6 +1180,36 @@ button.is-danger { color: #8b2635; }
 .inquiry-evidence-panel-source-list li { min-width: 0; font-size: 1rem; line-height: 1.5; }
 
 .inquiry-evidence-panel-premise { display: grid; gap: .3rem; }
+.inquiry-evidence-panel-premise-condition {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .35rem;
+  line-height: 1.5;
+}
+.inquiry-evidence-panel-premise-choice {
+  display: inline-flex;
+  align-items: center;
+}
+.inquiry-premise-state {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  max-width: 100%;
+  margin: 0;
+  padding: .35rem .55rem;
+  border: 1px solid #7890a7;
+  border-radius: 7px;
+  color: #173f62;
+  background: #f4f8fb;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.25;
+  cursor: pointer;
+}
+.inquiry-premise-state:hover { background: #e9f1f8; border-color: #466b8d; }
+.inquiry-premise-state:focus-visible { outline: 2px solid #1d4f7a; outline-offset: -3px; }
+.inquiry-premise-state-icon { margin-left: .35rem; color: #466b8d; font-size: .8em; }
 .inquiry-evidence-panel-premise h3,
 .inquiry-evidence-panel-premise-title { margin: 0; }
 .inquiry-evidence-panel-premise h3,
@@ -1051,7 +1220,6 @@ button.is-danger { color: #8b2635; }
 .inquiry-evidence-panel-target h3 { margin: 0; color: #1f3147; font-size: .88rem; font-weight: 750; line-height: 1.35; }
 .inquiry-evidence-panel-premise-title { color: #0f172a; font-size: 1rem; font-weight: 400; line-height: 1.5; }
 .inquiry-evidence-panel-effect { display: grid; gap: .6rem; }
-.inquiry-evidence-panel-current-conclusion { margin: 0; color: #334155; font-size: .88rem; font-weight: 750; line-height: 1.35; }
 .inquiry-evidence-panel-conditional {
   display: block;
   margin: 0;
@@ -1064,21 +1232,10 @@ button.is-danger { color: #8b2635; }
 .inquiry-evidence-panel-effect,
 .inquiry-evidence-panel-conclusion,
 .inquiry-evidence-panel-target { align-content: start; }
-.inquiry-evidence-panel-strength {
-  color: inherit;
-  font-size: 1rem;
-  font-weight: 400;
-}
-.inquiry-evidence-panel-current-conclusion .inquiry-evidence-panel-strength { font-size: inherit; }
-.inquiry-evidence-panel-current-conclusion,
 .inquiry-conditional-strength-target,
 .inquiry-conditional-strength-relation { margin: 0; color: #172033; font-size: 1rem; line-height: 1.4; }
 .inquiry-evidence-panel-conclusion { display: grid; gap: .25rem; }
 .inquiry-evidence-panel-conclusion-content { display: grid; min-width: 0; gap: .25rem; }
-.inquiry-evidence-impact-preview { display: grid; min-width: 0; gap: .1rem; margin-top: .2rem; }
-.inquiry-evidence-impact-preview .inquiry-flow-ruler { min-width: 0; margin-inline: 1.125rem; }
-.inquiry-evidence-impact-preview .inquiry-flow-axis-track { width: auto; min-width: 0; margin-inline: 1.125rem; }
-.inquiry-evidence-panel-current-conclusion { font-weight: 400; }
 .inquiry-conditional-strength { position: relative; display: grid; min-width: 0; gap: .2rem; }
 .inquiry-conditional-strength-metric { justify-self: center; font-weight: 700; text-align: center; }
 .inquiry-conditional-strength-reset { position: absolute; z-index: 2; top: -.35rem; right: 0; min-width: 1.8rem; min-height: 1.8rem; padding: 0; border-radius: 50%; font-size: 1rem; line-height: 1; }
@@ -1095,11 +1252,11 @@ button.is-danger { color: #8b2635; }
 .inquiry-conditional-strength-control { position: relative; display: grid; min-width: 0; gap: .05rem; }
 .inquiry-force-arrow-layer {
   position: absolute;
+  z-index: 2;
   height: .8rem;
   pointer-events: none;
 }
 .inquiry-conditional-strength-visual { top: 1.15rem; right: 1.125rem; left: 1.125rem; }
-.inquiry-evidence-impact-preview .inquiry-force-arrow-layer { z-index: 3; top: .35rem; right: 0; left: 0; }
 .inquiry-force-arrow {
   position: absolute;
   top: 0;
@@ -1109,8 +1266,8 @@ button.is-danger { color: #8b2635; }
   color: var(--force-arrow-color, #64748b);
 }
 .inquiry-force-arrow[hidden] { display: none; }
-.inquiry-force-arrow.is-support { left: 50%; }
-.inquiry-force-arrow.is-opposition { right: 50%; }
+.inquiry-force-arrow.is-support { left: 50%; color: #15803d; }
+.inquiry-force-arrow.is-opposition { right: 50%; color: #b91c1c; }
 .inquiry-force-arrow-body {
   position: absolute;
   top: .25rem;
@@ -1290,6 +1447,22 @@ button.is-danger { color: #8b2635; }
   .inquiry-evidence-panel-body { padding: 0; }
 }
 
+:where(:root[data-theme="dark"]) button,
+:where(:root[data-theme="dark"]) input,
+:where(:root[data-theme="dark"]) select,
+:where(:root[data-theme="dark"]) textarea {
+  border-color: #535b65;
+  color: #dfe3e8;
+  background: #20242a;
+}
+:where(:root[data-theme="dark"]) button:hover { border-color: #8a929d; background: #292e35; }
+:where(:root[data-theme="dark"]) button:focus-visible,
+:where(:root[data-theme="dark"]) input:focus-visible,
+:where(:root[data-theme="dark"]) select:focus-visible,
+:where(:root[data-theme="dark"]) textarea:focus-visible { outline-color: #93c5fd; }
+:where(:root[data-theme="dark"]) button.primary { border-color: #737c87; color: #f3f4f6; background: #292e35; }
+:where(:root[data-theme="dark"]) button.primary:hover { background: #333941; }
+
 :root[data-theme="dark"] {
   & {
     color-scheme: dark;
@@ -1301,22 +1474,6 @@ button.is-danger { color: #8b2635; }
   body { background: #17191c; }
   a { color: #7dd3fc; }
   a:visited { color: #c4b5fd; }
-
-  button,
-  input,
-  select,
-  textarea {
-    border-color: #535b65;
-    color: #dfe3e8;
-    background: #20242a;
-  }
-  button:hover { border-color: #8a929d; background: #292e35; }
-  button:focus-visible,
-  input:focus-visible,
-  select:focus-visible,
-  textarea:focus-visible { outline-color: #93c5fd; }
-  button.primary { border-color: #737c87; color: #f3f4f6; background: #292e35; }
-  button.primary:hover { background: #333941; }
 
   .eyebrow,
   .inquiry-claim-description,
@@ -1389,40 +1546,9 @@ button.is-danger { color: #8b2635; }
   .inquiry-ancestor-link:hover { border-color: color-mix(in srgb, var(--result-color, #9ca3af) 38%, #6b7280); background: color-mix(in srgb, var(--result-color, #9ca3af) 14%, #24282e); }
   .inquiry-claim-summary { background: #202327; }
 
-  .collapsed-evidence-summary { border-color: transparent; background: transparent; }
-  .collapsed-evidence-summary-label { color: #aeb5bd; }
-  .collapsed-evidence-summary-total.is-opposition { color: #f87171; }
-  .collapsed-evidence-summary-total.is-dissonance { color: #fde047; }
-  .collapsed-evidence-summary-total.is-dissonance.is-zero { color: #aeb5bd; }
-  .collapsed-evidence-summary-total.is-support { color: #4ade80; }
-  .collapsed-evidence-summary-center { background: #cbd5e1; }
-  .collapsed-evidence-summary-arrow.is-opposition { color: #f87171; }
-  .collapsed-evidence-summary-arrow.is-support { color: #4ade80; }
-
-  .inquiry-flow-axis { color: #aeb5bd; }
-  .inquiry-flow-axis > strong,
-  .inquiry-flow-axis-value,
-  .inquiry-flow-clipped { color: #dbe7f3; }
-  .inquiry-flow-axis-separator,
-  .inquiry-flow-ruler { color: #94a3b8; }
-  .inquiry-flow-ruler span::before { border-color: #64748b; }
-  .inquiry-prior-reset { border-color: #69717b; color: #d4d8de; background: rgb(255 255 255 / 3%); }
-  .inquiry-prior-reset:hover { border-color: #a9b0b9; color: #f8fafc; background: rgb(255 255 255 / 7%); }
-  .inquiry-prior-reset:focus-visible { outline-color: #93c5fd; }
   .inquiry-flow-axis.has-trail-toggle > .inquiry-trail-toggle { border-color: #a9b0b9; color: #f8fafc; background: #25292e; box-shadow: 0 1px 5px rgb(0 0 0 / 42%); }
   .inquiry-flow-axis.has-trail-toggle > .inquiry-trail-toggle:hover { border-color: #f8fafc; background: #30343a; }
   .inquiry-flow-axis.has-trail-toggle > .inquiry-trail-toggle:focus-visible { outline-color: #93c5fd; }
-  .inquiry-flow-axis-track { border-color: #5b626b; background: #1b1e22; }
-  .inquiry-flow-axis-track::after { border-color: rgb(203 213 225 / 30%); }
-  .inquiry-flow-axis-track.posterior-track .posterior-band { border-color: #737d88; box-shadow: inset 0 0 0 1px rgb(15 17 20 / 58%); }
-  .inquiry-flow-axis-band.is-neutral { border-color: #94a3b8; background: #64748b; }
-  .prior-handle:focus-visible,
-  .inquiry-prior-handle:focus-visible { outline-color: #dbeafe; }
-  .prior-handle::after { background-color: rgb(20 23 27 / 90%); }
-  .prior-handle:hover::after,
-  .prior-handle:active::after,
-  .prior-handle:focus-visible::after { background-color: #292e35; box-shadow: 0 1px 4px rgb(0 0 0 / 45%); }
-
   .inquiry-diagram-connection { stroke: #68717c; }
   .inquiry-diagram-connection.is-resultant-guide { stroke: #8b949f; }
   .inquiry-flow-canvas { border-color: #454b53; background: #202327; }
@@ -1478,7 +1604,6 @@ button.is-danger { color: #8b2635; }
   .inquiry-evidence-panel-target h3 { color: #f1f5f9; }
   .inquiry-evidence-panel-source p,
   .inquiry-evidence-panel-premise-title { color: #f8fafc; }
-  .inquiry-evidence-panel-current-conclusion { color: #c3cad2; }
   .inquiry-conditional-strength-target,
   .inquiry-conditional-strength-relation { color: #f1f5f9; }
   .inquiry-conditional-strength-legend { color: #aeb5bd; }
@@ -1501,6 +1626,10 @@ button.is-danger { color: #8b2635; }
   .inquiry-evidence-panel-target,
   .inquiry-evidence-panel-effect,
   .inquiry-evidence-panel-conclusion { background: #202327; }
+  .inquiry-premise-state { color: #dbe7f3; border-color: #64748b; background: #2b3037; }
+  .inquiry-premise-state:hover { border-color: #93c5fd; background: #343b44; }
+  .inquiry-premise-state:focus-visible { outline-color: #93c5fd; }
+  .inquiry-premise-state-icon { color: #93c5fd; }
   .inquiry-evidence-panel-target-card:hover {
     background: color-mix(in srgb, var(--result-color, #9ca3af) 19%, #202327);
   }
@@ -1516,7 +1645,6 @@ button.is-danger { color: #8b2635; }
     background: color-mix(in srgb, var(--result-color, #9ca3af) 16%, #2b3037);
   }
   .inquiry-evidence-panel-premise-link:focus-visible { outline-color: #93c5fd; }
-  .inquiry-evidence-panel-strength { color: #f1f5f9; }
   .inquiry-evidence-panel-metric-value {
     color: color-mix(in srgb, var(--metric-color, #94a3b8) 58%, #fff);
   }
@@ -1906,7 +2034,7 @@ button.is-danger { color: #8b2635; }
     return { setLocale: apply };
   }
 
-  // demo/src/dom.ts
+  // demo/src/html-element.ts
   function element(tag, attributes = {}, children = []) {
     const node = document.createElement(tag);
     for (const [key, value] of Object.entries(attributes)) {
@@ -1918,15 +2046,6 @@ button.is-danger { color: #8b2635; }
     }
     node.append(...children.filter((child) => Boolean(child)));
     return node;
-  }
-  function safeHttpUrl(value) {
-    if (!value) return void 0;
-    try {
-      const url = new URL(value);
-      return ["http:", "https:"].includes(url.protocol) ? url.href : void 0;
-    } catch {
-      return void 0;
-    }
   }
 
   // demo/src/components/legal-information.ts
@@ -2162,11 +2281,29 @@ button.is-danger { color: #8b2635; }
       "evidenceDetails": "Evidence details",
       "closeEvidenceDetails": "Close evidence details",
       "basedOn": "Based on",
-      "ifClaimIsTrue": "If",
+      "premiseCondition": "Premise condition",
+      "premiseHeading": "If the premise",
+      "premiseIs": "is",
+      "premiseConditionSuffix": ",",
+      "premiseTrue": "true",
+      "premiseFalse": "false",
+      "changeToTrue": "Change to true",
+      "changeToFalse": "Change to false",
       "currentImpactIntro": "The impact is therefore",
       "selectedEvidenceImpact": "Current impact of this evidence on the credibility of “{target}”",
+      "conditionalImpactSentence": "If the premise is {condition}, its impact would be",
+      "premiseCredibilitySentence": "Given the premise’s credibility,",
+      "premiseFalseProbabilitySentence": "Given the chance the premise is false,",
+      "atPremiseCredibility": "At the premise’s credibility",
+      "atPremiseFalseProbability": "At the chance the premise is false",
+      "premiseCredibilityApplies": "applies",
+      "premiseCredibilityTitle": "Expected probability that the premise Claim is true",
+      "premiseFalseProbabilityTitle": "Expected probability that the premise Claim is false",
+      "currentImpactSentence": "Its current impact is",
+      "currentImpactUncertaintySentence": "Its current impact",
+      "selectedEvidenceImpactAria": "{label}. This Evidence applies when the premise is {condition}. In this relationship step, the {bound} 3σ bound moves from {before} dBan before this Evidence to {conditional} dBan at full conditional impact and {current} dBan after premise weighting. Conditional mean shift {conditionalMean} dBan; premise weight {weight}; current mean shift {currentMean} dBan; {conclusion}.",
       "credibilityInterval": "between {lower} and {upper}",
-      "premiseWeightingSentence": "{claim} has credence {interval}, giving it a weight of {weight}.",
+      "premiseWeightingSentence": "{claim} has credibility {interval}. Because this Evidence applies when it is {condition}, its weight is {weight}.",
       "andGivenClaimCredibility": "And given that",
       "butGivenClaimCredibility": "But given that",
       "investigateClaimNamed": "Explore claim: {claim}",
@@ -2205,8 +2342,7 @@ button.is-danger { color: #8b2635; }
       "resetConditionalStrength": "Reset conditional evidence strength",
       "conditionalOpposition": "Opposition",
       "conditionalSupport": "Support",
-      "directionalStrengthNone": "No directional effect (0 dBan)",
-      "ifThisWereTrue": "Impact if this were true"
+      "directionalStrengthNone": "No directional effect (0 dBan)"
     },
     "form": {
       "requiredText": "Enter text without relying on spaces alone.",
@@ -2222,6 +2358,11 @@ button.is-danger { color: #8b2635; }
       "premiseAssertion": "Premise assertion",
       "useExistingPremise": "Use an existing premise",
       "premiseDescription": "Premise description",
+      "premiseCondition": "Premise condition",
+      "premiseTrue": "True",
+      "premiseFalse": "False",
+      "changeToTrue": "Change to true",
+      "changeToFalse": "Change to false",
       "addEvidence": "Add evidence",
       "editDetails": "Edit source",
       "save": "Save",
@@ -2376,11 +2517,29 @@ button.is-danger { color: #8b2635; }
       "evidenceDetails": "Détails de la preuve",
       "closeEvidenceDetails": "Fermer les détails de la preuve",
       "basedOn": "En se basant sur",
-      "ifClaimIsTrue": "Si",
+      "premiseCondition": "Condition de la prémisse",
+      "premiseHeading": "Si la prémisse",
+      "premiseIs": "est",
+      "premiseConditionSuffix": ",",
+      "premiseTrue": "vraie",
+      "premiseFalse": "fausse",
+      "changeToTrue": "Passer à vraie",
+      "changeToFalse": "Passer à fausse",
       "currentImpactIntro": "L’impact est donc",
       "selectedEvidenceImpact": "Impact actuel de cette preuve sur la crédibilité de « {target} »",
+      "conditionalImpactSentence": "Si la prémisse est {condition}, son impact serait",
+      "premiseCredibilitySentence": "Compte tenu de la crédibilité de la prémisse,",
+      "premiseFalseProbabilitySentence": "Compte tenu de la chance que la prémisse soit fausse,",
+      "atPremiseCredibility": "À la crédibilité de la prémisse",
+      "atPremiseFalseProbability": "Avec la chance que la prémisse soit fausse",
+      "premiseCredibilityApplies": "s’applique",
+      "premiseCredibilityTitle": "Probabilité attendue que l’affirmation de la prémisse soit vraie",
+      "premiseFalseProbabilityTitle": "Probabilité attendue que l’affirmation de la prémisse soit fausse",
+      "currentImpactSentence": "Son impact actuel est",
+      "currentImpactUncertaintySentence": "Son impact actuel",
+      "selectedEvidenceImpactAria": "{label}. Cette preuve s’applique lorsque la prémisse est {condition}. Dans cette étape de la relation, la borne {bound} à 3σ passe de {before} dBan avant cette preuve à {conditional} dBan pour l’impact conditionnel complet, puis à {current} dBan après pondération par la prémisse. Déplacement conditionnel de la moyenne : {conditionalMean} dBan ; poids de la prémisse : {weight} ; déplacement actuel de la moyenne : {currentMean} dBan ; {conclusion}.",
       "credibilityInterval": "comprise entre {lower} et {upper}",
-      "premiseWeightingSentence": "{claim} a une crédibilité {interval}, donc une pondération de {weight}.",
+      "premiseWeightingSentence": "{claim} a une crédibilité {interval}. Cette preuve s’applique lorsqu’elle est {condition}, donc sa pondération est {weight}.",
       "andGivenClaimCredibility": "Sachant que",
       "butGivenClaimCredibility": "Mais sachant que",
       "investigateClaimNamed": "Explorer cette affirmation : {claim}",
@@ -2419,8 +2578,7 @@ button.is-danger { color: #8b2635; }
       "resetConditionalStrength": "Réinitialiser la force conditionnelle",
       "conditionalOpposition": "Opposition",
       "conditionalSupport": "Soutien",
-      "directionalStrengthNone": "Aucun effet directionnel (0 dBan)",
-      "ifThisWereTrue": "Impact si c’était vrai"
+      "directionalStrengthNone": "Aucun effet directionnel (0 dBan)"
     },
     "form": {
       "requiredText": "Saisissez du texte qui ne contient pas uniquement des espaces.",
@@ -2436,6 +2594,11 @@ button.is-danger { color: #8b2635; }
       "premiseAssertion": "Affirmation de la prémisse",
       "useExistingPremise": "Utiliser une prémisse existante",
       "premiseDescription": "Description de la prémisse",
+      "premiseCondition": "Condition de la prémisse",
+      "premiseTrue": "Vraie",
+      "premiseFalse": "Fausse",
+      "changeToTrue": "Passer à vraie",
+      "changeToFalse": "Passer à fausse",
       "addEvidence": "Ajouter une preuve",
       "editDetails": "Modifier la source",
       "save": "Enregistrer",
@@ -2562,7 +2725,7 @@ button.is-danger { color: #8b2635; }
     };
   }
 
-  // dist/evidence/aggregation.js
+  // packages/evidence-diagrams/dist/evidence/aggregation.js
   function aggregateEvidence(contributions) {
     let netWeightDecibans = 0;
     let absoluteWeightDecibans = 0;
@@ -2596,7 +2759,7 @@ button.is-danger { color: #8b2635; }
     return { netWeightDecibans, absoluteWeightDecibans, dissonance };
   }
 
-  // dist/credence/priors.js
+  // packages/evidence-diagrams/dist/credibility/priors.js
   var DEFAULT_PRIORS = Object.freeze({
     minPriorDecibans: -15,
     maxPriorDecibans: 15
@@ -2616,7 +2779,7 @@ button.is-danger { color: #8b2635; }
     return { minPriorDecibans, maxPriorDecibans };
   }
 
-  // dist/colors/color.js
+  // packages/evidence-diagrams/dist/colors/color.js
   var DEFAULT_COLOR_OPTIONS = Object.freeze({
     ...DEFAULT_PRIORS,
     saturationThresholdDecibans: 15,
@@ -2714,7 +2877,7 @@ button.is-danger { color: #8b2635; }
     ];
   }
 
-  // dist/colors/palette.js
+  // packages/evidence-diagrams/dist/colors/palette.js
   function credibilityAxisColor(decibans, options = {}) {
     return color({
       netWeightDecibans: decibans,
@@ -2774,7 +2937,7 @@ button.is-danger { color: #8b2635; }
     return { minimum, maximum };
   }
 
-  // dist/evidence/jeffreys.js
+  // packages/evidence-diagrams/dist/evidence/jeffreys.js
   var JEFFREYS_THRESHOLDS_DECIBANS = Object.freeze([2.5, 5, 10, 15, 20]);
   function jeffreysBand(weight) {
     const weightDecibans = weight?.weightDecibans;
@@ -2801,7 +2964,7 @@ button.is-danger { color: #8b2635; }
     return weightDecibans < 0 ? `${band3} against` : band3;
   }
 
-  // dist/credence/conversions.js
+  // packages/evidence-diagrams/dist/credibility/conversions.js
   function decibansToProbability(weight) {
     const weightDecibans = weight?.weightDecibans;
     if (typeof weightDecibans !== "number" || Number.isNaN(weightDecibans)) {
@@ -2814,7 +2977,7 @@ button.is-danger { color: #8b2635; }
     return { probability: odds / (1 + odds) };
   }
 
-  // dist/credence/probability-bounds.js
+  // packages/evidence-diagrams/dist/credibility/probability-bounds.js
   var EXTREME_PERCENTAGE = 1;
   var MAX_FRACTION_DIGITS = 12;
   function formatProbabilityDisplay(weightDecibans, direction) {
@@ -2859,7 +3022,7 @@ button.is-danger { color: #8b2635; }
     return { value: rounded };
   }
 
-  // dist/propagation-math/gaussian.js
+  // packages/evidence-diagrams/dist/propagation-math/gaussian.js
   var DECIBAN_SCALE = Math.log(10) / 10;
   var NORMAL_DENSITY_SCALE = 1 / Math.sqrt(2 * Math.PI);
   function requireFinite(value, name) {
@@ -2973,7 +3136,7 @@ button.is-danger { color: #8b2635; }
     return Math.min(1, Math.max(0, result));
   }
 
-  // dist/propagation-math/propagation.js
+  // packages/evidence-diagrams/dist/propagation-math/propagation.js
   function safeRecord() {
     return /* @__PURE__ */ Object.create(null);
   }
@@ -2988,6 +3151,14 @@ button.is-danger { color: #8b2635; }
       deltaMean: impact.deltaMean,
       deltaStandardDeviation: impact.deltaStandardDeviation
     };
+  }
+  function premiseWeight({ premise, premiseState }) {
+    if (premiseState === "true")
+      return premise.probability;
+    return expectedProbability({
+      mean: -premise.posterior.mean,
+      standardDeviation: premise.posterior.standardDeviation
+    });
   }
   function evaluatePropagationGraph(graph, options = {}) {
     const evidenceOrder = options.evidenceOrder ?? "stored";
@@ -3015,6 +3186,9 @@ button.is-danger { color: #8b2635; }
       if (!claims.has(item.targetId)) {
         throw new Error(`Evidence ${item.id} references missing target claim ${item.targetId}.`);
       }
+      if (item.premiseState !== void 0 && item.premiseState !== "true" && item.premiseState !== "false") {
+        throw new RangeError(`Evidence ${item.id} premiseState must be true or false.`);
+      }
       const link2 = JSON.stringify([item.premiseId, item.targetId]);
       if (links.has(link2)) {
         throw new Error(`Duplicate premise-target link: ${item.premiseId} -> ${item.targetId}`);
@@ -3040,22 +3214,30 @@ button.is-danger { color: #8b2635; }
         const prior = copyGaussian(claim2.prior);
         let posterior = copyGaussian(claim2.prior);
         const steps = [];
-        const resolvedEvidence = (evidenceByTarget.get(id) ?? []).map((evidence2, index) => ({
-          evidence: evidence2,
-          index,
-          premise: evaluateClaim(evidence2.premiseId)
-        }));
+        const resolvedEvidence = (evidenceByTarget.get(id) ?? []).map((evidence2, index) => {
+          const premise = evaluateClaim(evidence2.premiseId);
+          const premiseState = evidence2.premiseState ?? "true";
+          return {
+            evidence: evidence2,
+            index,
+            premise,
+            premiseState,
+            premiseWeight: premiseWeight({ premise, premiseState })
+          };
+        });
         if (evidenceOrder === "weakest-first") {
-          resolvedEvidence.sort((left, right) => Math.abs(left.premise.probability * left.evidence.impact.deltaMean) - Math.abs(right.premise.probability * right.evidence.impact.deltaMean) || left.index - right.index);
+          resolvedEvidence.sort((left, right) => Math.abs(left.premiseWeight * left.evidence.impact.deltaMean) - Math.abs(right.premiseWeight * right.evidence.impact.deltaMean) || left.index - right.index);
         }
-        for (const { evidence: evidence2, premise } of resolvedEvidence) {
+        for (const { evidence: evidence2, premise, premiseState, premiseWeight: weight } of resolvedEvidence) {
           const before = posterior;
           const impact = copyImpact(evidence2.impact);
-          posterior = applyImpact(before, impact, premise.probability);
+          posterior = applyImpact(before, impact, weight);
           steps.push({
             evidenceId: evidence2.id,
             premiseId: evidence2.premiseId,
             premiseProbability: premise.probability,
+            premiseWeight: weight,
+            premiseState,
             before,
             after: posterior,
             impact
@@ -3078,7 +3260,7 @@ button.is-danger { color: #8b2635; }
     return { rootId: graph.rootId, claims: evaluations };
   }
 
-  // dist/inquiry/evaluate.js
+  // packages/evidence-diagrams/dist/inquiry/evaluate.js
   function requireId(value, description) {
     if (typeof value !== "string" || value.length === 0) {
       throw new TypeError(`${description} must be a non-empty string.`);
@@ -3149,6 +3331,9 @@ button.is-danger { color: #8b2635; }
       requireId(evidence2.contributionId, `Evidence ${evidence2.id} contributionId`);
       requireId(evidence2.premiseClaimId, `Evidence ${evidence2.id} premiseClaimId`);
       requireId(evidence2.targetClaimId, `Evidence ${evidence2.id} targetClaimId`);
+      if (evidence2.premiseState !== void 0 && evidence2.premiseState !== "true" && evidence2.premiseState !== "false") {
+        throw new RangeError(`Evidence ${evidence2.id} premiseState must be true or false.`);
+      }
       if (!contributionIds.has(evidence2.contributionId)) {
         throw new Error(`Evidence ${evidence2.id} references missing contribution ${evidence2.contributionId}.`);
       }
@@ -3181,11 +3366,12 @@ button.is-danger { color: #8b2635; }
     const graph = {
       rootId: inquiry3.rootClaimId,
       claims: inquiry3.claims.map(({ id, prior }) => ({ id, prior })),
-      evidence: inquiry3.evidence.map(({ id, premiseClaimId, targetClaimId, impact }) => ({
+      evidence: inquiry3.evidence.map(({ id, premiseClaimId, targetClaimId, impact, premiseState }) => ({
         id,
         premiseId: premiseClaimId,
         targetId: targetClaimId,
-        impact
+        impact,
+        premiseState
       }))
     };
     const evaluated = evaluatePropagationGraph(graph, options);
@@ -3199,6 +3385,8 @@ button.is-danger { color: #8b2635; }
           evidenceId: step.evidenceId,
           premiseClaimId: step.premiseId,
           premiseProbability: step.premiseProbability,
+          premiseWeight: step.premiseWeight,
+          premiseState: step.premiseState,
           before: step.before,
           after: step.after,
           impact: step.impact
@@ -3284,6 +3472,17 @@ button.is-danger { color: #8b2635; }
     };
   }
 
+  // demo/src/safe-http-url.ts
+  function safeHttpUrl(value) {
+    if (!value) return void 0;
+    try {
+      const url = new URL(value);
+      return ["http:", "https:"].includes(url.protocol) ? url.href : void 0;
+    } catch {
+      return void 0;
+    }
+  }
+
   // demo/src/color.ts
   function readableMetricColor(color2) {
     const match = /^#([\da-f]{6})$/i.exec(color2);
@@ -3291,57 +3490,6 @@ button.is-danger { color: #8b2635; }
     const channels = match[1].match(/[\da-f]{2}/gi).map((channel) => Number.parseInt(channel, 16));
     const foreground = [15, 23, 42];
     return `#${channels.map((channel, index) => Math.round((channel + foreground[index]) / 2).toString(16).padStart(2, "0")).join("")}`;
-  }
-
-  // demo/src/presentation.ts
-  var POSITIVE_BAND_FIELDS = {
-    none: "none",
-    anecdotal: "anecdotal",
-    weak: "weak",
-    moderate: "moderate",
-    strong: "strong",
-    "very strong": "very_strong",
-    decisive: "decisive",
-    "anecdotal against": "anecdotal",
-    "weak against": "weak",
-    "moderate against": "moderate",
-    "strong against": "strong",
-    "very strong against": "very_strong",
-    "decisive against": "decisive"
-  };
-  function signedNumber(i18n2, value, maximumFractionDigits = 0) {
-    const prefix = value > 0 ? "+" : value < 0 ? "−" : "";
-    return `${prefix}${i18n2.number(Math.abs(value), { maximumFractionDigits })}`;
-  }
-  function formatDissonance(i18n2, value) {
-    return i18n2.percent(value, { maximumFractionDigits: 0 });
-  }
-  function formatJeffreysStrength(i18n2, weightDecibans) {
-    const field = POSITIVE_BAND_FIELDS[jeffreysBand({ weightDecibans })];
-    return i18n2.messages.band[field];
-  }
-  function formatDecibans(i18n2, value) {
-    return `${signedNumber(i18n2, value)} dBan`;
-  }
-  function formatStrengthChange(i18n2, before, after, noneMessage = i18n2.messages.inquiry.strength.strengthNone) {
-    const meanShift = after.mean - before.mean;
-    const widthShift = after.standardDeviation - before.standardDeviation;
-    if (Math.abs(meanShift) > 1e-12) {
-      return i18n2.formatMessage(
-        meanShift > 0 ? i18n2.messages.inquiry.strength.strengthSupportDetail : i18n2.messages.inquiry.strength.strengthOppositionDetail,
-        {
-          strength: formatJeffreysStrength(i18n2, meanShift),
-          amount: formatDecibans(i18n2, meanShift)
-        }
-      );
-    }
-    if (Math.abs(widthShift) > 1e-12) {
-      return i18n2.formatMessage(
-        i18n2.messages.inquiry.strength.strengthWidthDetail,
-        { amount: formatDecibans(i18n2, widthShift) }
-      );
-    }
-    return noneMessage;
   }
 
   // demo/src/components/claim-evidence-preview.ts
@@ -3429,6 +3577,57 @@ button.is-danger { color: #8b2635; }
       yBefore = yAfter;
     });
     return svg;
+  }
+
+  // demo/src/presentation.ts
+  var POSITIVE_BAND_FIELDS = {
+    none: "none",
+    anecdotal: "anecdotal",
+    weak: "weak",
+    moderate: "moderate",
+    strong: "strong",
+    "very strong": "very_strong",
+    decisive: "decisive",
+    "anecdotal against": "anecdotal",
+    "weak against": "weak",
+    "moderate against": "moderate",
+    "strong against": "strong",
+    "very strong against": "very_strong",
+    "decisive against": "decisive"
+  };
+  function signedNumber(i18n2, value, maximumFractionDigits = 0) {
+    const prefix = value > 0 ? "+" : value < 0 ? "−" : "";
+    return `${prefix}${i18n2.number(Math.abs(value), { maximumFractionDigits })}`;
+  }
+  function formatDissonance(i18n2, value) {
+    return i18n2.percent(value, { maximumFractionDigits: 0 });
+  }
+  function formatJeffreysStrength(i18n2, weightDecibans) {
+    const field = POSITIVE_BAND_FIELDS[jeffreysBand({ weightDecibans })];
+    return i18n2.messages.band[field];
+  }
+  function formatDecibans(i18n2, value) {
+    return `${signedNumber(i18n2, value)} dBan`;
+  }
+  function formatStrengthChange(i18n2, before, after, noneMessage = i18n2.messages.inquiry.strength.strengthNone) {
+    const meanShift = after.mean - before.mean;
+    const widthShift = after.standardDeviation - before.standardDeviation;
+    if (Math.abs(meanShift) > 1e-12) {
+      return i18n2.formatMessage(
+        meanShift > 0 ? i18n2.messages.inquiry.strength.strengthSupportDetail : i18n2.messages.inquiry.strength.strengthOppositionDetail,
+        {
+          strength: formatJeffreysStrength(i18n2, meanShift),
+          amount: formatDecibans(i18n2, meanShift)
+        }
+      );
+    }
+    if (Math.abs(widthShift) > 1e-12) {
+      return i18n2.formatMessage(
+        i18n2.messages.inquiry.strength.strengthWidthDetail,
+        { amount: formatDecibans(i18n2, widthShift) }
+      );
+    }
+    return noneMessage;
   }
 
   // demo/src/components/force-arrow.ts
@@ -3628,11 +3827,7 @@ button.is-danger { color: #8b2635; }
       input.value = String(visibleValue);
       input.classList.toggle("is-clipped", visibleValue !== current);
       reset.disabled = Math.abs(current - defaultValue) <= 1e-12;
-      updateForceArrow(arrow, visibleValue, forceExtentDecibans, evidenceStrengthColor({
-        netWeightDecibans: current,
-        absoluteWeightDecibans: Math.abs(current),
-        dissonance: 0
-      }, { saturationThresholdDecibans }));
+      updateForceArrow(arrow, visibleValue, forceExtentDecibans);
       updateMetric(metric, messages, formatMessage2, number, current, saturationThresholdDecibans);
       if (heading) updatePanelHeading(heading, messages, formatMessage2, current);
       relation.textContent = current < 0 ? panelNarrative ? messages.conditionalRelationHeadingOpposition : messages.conditionalRelationOpposition : current > 0 ? panelNarrative ? messages.conditionalRelationHeadingSupport : messages.conditionalRelationSupport : panelNarrative ? messages.conditionalRelationHeadingNeutral : messages.conditionalRelationNeutral;
@@ -3671,108 +3866,838 @@ button.is-danger { color: #8b2635; }
     };
   }
 
-  // demo/src/components/evidence-impact-preview.ts
-  function axisLabel(i18n2, value) {
-    const display = formatProbabilityDisplay(value, "exact");
-    return `${display.operator ?? "~"} ${i18n2.percent(display.value / 100, { maximumFractionDigits: 12 })}`;
+  // packages/evidence-diagrams-dom/dist/html-element.js
+  function element2(tag, attributes = {}, children = []) {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(attributes)) {
+      if (key === "className")
+        node.className = String(value ?? "");
+      else if (key === "textContent")
+        node.textContent = String(value ?? "");
+      else if (key === "dataset" && typeof value === "object" && value !== null) {
+        Object.assign(node.dataset, value);
+      } else if (value !== void 0 && value !== null)
+        node.setAttribute(key, String(value));
+    }
+    node.append(...children.filter((child) => child !== void 0));
+    return node;
   }
-  function buildEvidenceImpactPreviewGeometry(posterior, meanShift, saturationThresholdDecibans, forceExtentDecibans) {
-    const posteriorBand = gaussianToBand(posterior);
-    const reference = { ...posterior, mean: posterior.mean - meanShift };
-    const referenceBand = gaussianToBand(reference);
-    const start = meanShift > 0 ? referenceBand.lower : meanShift < 0 ? referenceBand.upper : posterior.mean;
-    const halfSpan = forceExtentDecibans ?? Math.max(2 * saturationThresholdDecibans, Math.abs(meanShift) / 0.8);
-    const minimum = start - halfSpan;
-    const maximum = start + halfSpan;
-    const position = ({ lower, upper }) => ({
-      left: (Math.max(minimum, Math.min(maximum, lower)) - minimum) / (maximum - minimum) * 100,
-      width: Math.max(0, (Math.min(maximum, upper) - Math.max(minimum, lower)) / (maximum - minimum) * 100),
-      center: (Math.max(minimum, Math.min(maximum, (lower + upper) / 2)) - minimum) / (maximum - minimum) * 100,
-      clippedMinimum: lower < minimum,
-      clippedMaximum: upper > maximum
+
+  // packages/evidence-diagrams-dom/dist/credibility/ruler.js
+  var MAX_PROBABILITY_TICKS = 97;
+  var MAX_RELATIVE_DECIBAN_TICKS = 127;
+  function validateCredibilityAxisDomain(domain) {
+    const span = domain.maximum - domain.minimum;
+    if (!Number.isFinite(domain.minimum) || !Number.isFinite(domain.maximum) || !Number.isFinite(span) || span <= 0) {
+      throw new RangeError("Credibility axis domain requires a finite increasing representable span.");
+    }
+    return span;
+  }
+  function roundedStep(rawStep) {
+    if (!Number.isFinite(rawStep) || rawStep <= 0)
+      return rawStep;
+    const exponent = 10 ** Math.floor(Math.log10(rawStep));
+    if (!Number.isFinite(exponent) || exponent === 0)
+      return rawStep;
+    const fraction = rawStep / exponent;
+    return (fraction <= 1.5 ? 1 : fraction <= 3.5 ? 2 : fraction <= 7.5 ? 5 : 10) * exponent;
+  }
+  function roundedUpStep(rawStep) {
+    if (!Number.isFinite(rawStep) || rawStep <= 0)
+      return rawStep;
+    const exponent = 10 ** Math.floor(Math.log10(rawStep));
+    if (!Number.isFinite(exponent) || exponent === 0)
+      return rawStep;
+    const fraction = rawStep / exponent;
+    return (fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10) * exponent;
+  }
+  function boundedTickValues({ domain, step, maximumTicks }) {
+    if (!Number.isFinite(step) || step <= 0)
+      return [];
+    const first = Math.ceil(domain.minimum / step) * step;
+    if (!Number.isFinite(first))
+      return [];
+    const available = (domain.maximum - first) / step;
+    const count = Number.isFinite(available) ? Math.max(0, Math.min(maximumTicks, Math.floor(available + 1e-10) + 1)) : 0;
+    const values = /* @__PURE__ */ new Set();
+    for (let index = 0; index < count; index += 1) {
+      const value = first + index * step;
+      if (Number.isFinite(value) && value >= domain.minimum && value <= domain.maximum)
+        values.add(value);
+    }
+    return [...values];
+  }
+  function formatAxisProbability(decibans, formatPercent) {
+    const display = formatProbabilityDisplay(decibans, "exact");
+    if (Math.abs(display.value - 50) < 0.05) {
+      return formatPercent(0.5, { maximumFractionDigits: 0 });
+    }
+    const percentage = formatPercent(display.value / 100, { maximumFractionDigits: 12 });
+    return display.operator === void 0 ? percentage : `${display.operator} ${percentage}`;
+  }
+  function probabilityTicks({ domain, plotWidth, formatPercent, positions }) {
+    const span = validateCredibilityAxisDomain(domain);
+    if (positions) {
+      const values2 = [...positions].filter((value) => value >= domain.minimum && value <= domain.maximum).sort((left, right) => left - right).filter((value, index, all) => index === 0 || Math.abs(value - all[index - 1]) > 1e-12);
+      return values2.map((value) => ({
+        value,
+        label: formatAxisProbability(value, formatPercent),
+        major: true
+      }));
+    }
+    const step = Math.max(5, roundedUpStep(span / (MAX_PROBABILITY_TICKS - 2)));
+    const values = /* @__PURE__ */ new Set([domain.minimum, domain.maximum]);
+    if (domain.minimum <= 0 && domain.maximum >= 0)
+      values.add(0);
+    for (const value of boundedTickValues({ domain, step, maximumTicks: MAX_PROBABILITY_TICKS })) {
+      values.add(value);
+    }
+    const tickValues = [...values].filter((value) => value >= domain.minimum && value <= domain.maximum).sort((left, right) => left - right);
+    const width = plotWidth || 600;
+    const labels = /* @__PURE__ */ new Map();
+    const placements = [];
+    const priority = [0, domain.minimum, domain.maximum, ...tickValues].filter((value) => value >= domain.minimum && value <= domain.maximum).filter((value, index, all) => all.indexOf(value) === index);
+    for (const value of priority) {
+      const label = formatAxisProbability(value, formatPercent);
+      const estimatedWidth = Math.max(22, label.length * 6.8);
+      const center = (value - domain.minimum) / (domain.maximum - domain.minimum) * width;
+      const left = Math.max(1, Math.min(width - estimatedWidth - 1, center - estimatedWidth / 2));
+      const right = left + estimatedWidth;
+      if (placements.some(([start, end]) => left <= end + 5 && right >= start - 5))
+        continue;
+      placements.push([left, right]);
+      labels.set(value, label);
+    }
+    return tickValues.map((value) => ({ value, label: labels.get(value) ?? "", major: true }));
+  }
+  function relativeDecibanTicks({ domain, origin }) {
+    const span = validateCredibilityAxisDomain(domain);
+    if (!Number.isFinite(origin))
+      throw new RangeError("Relative deciban ruler origin must be finite.");
+    const rawStep = span / 25;
+    const step = roundedStep(rawStep) || span;
+    const labelStep = step * 5;
+    const decimalPlaces = Array.from({ length: 7 }, (_, places) => places).find((places) => Math.abs(labelStep * 10 ** places - Math.round(labelStep * 10 ** places)) < 1e-8) ?? 6;
+    const minimum = Math.ceil((domain.minimum - origin) / step - 1e-10);
+    const maximum = Math.floor((domain.maximum - origin) / step + 1e-10);
+    if (!Number.isFinite(minimum) || !Number.isFinite(maximum) || maximum < minimum)
+      return [];
+    const count = Math.max(0, Math.min(MAX_RELATIVE_DECIBAN_TICKS, Math.floor(maximum - minimum + 1)));
+    const ticksByValue = /* @__PURE__ */ new Map();
+    for (let offsetIndex = 0; offsetIndex < count; offsetIndex += 1) {
+      const index = minimum + offsetIndex;
+      const offset = index * step;
+      const value = origin + offset;
+      if (!Number.isFinite(value) || value < domain.minimum || value > domain.maximum)
+        continue;
+      const major = index % 5 === 0;
+      const formatted = Math.abs(offset) < step / 2 ? "0" : `${offset > 0 ? "+" : ""}${offset.toFixed(decimalPlaces)}`;
+      ticksByValue.set(value, { value, label: major ? formatted : "", major });
+    }
+    return [...ticksByValue.values()].sort((left, right) => left.value - right.value);
+  }
+  function renderRuler({ domain, ticks, relativeDecibans = false, axisBreak, anchorEndpoints = false, plotWidth = 600 }) {
+    const ruler = element2("div", {
+      className: `inquiry-flow-ruler${relativeDecibans ? " is-relative-decibans" : ""}`,
+      "aria-hidden": "true"
     });
-    return {
-      minimum,
-      maximum,
-      posteriorBand,
-      position: position(posteriorBand)
-    };
+    const labelledTickIndexes = ticks.map(({ label }, index) => label ? index : -1).filter((index) => index >= 0);
+    const endpointsAreClose = anchorEndpoints && labelledTickIndexes.length === 2 && (ticks[labelledTickIndexes[1]].value - ticks[labelledTickIndexes[0]].value) / (domain.maximum - domain.minimum) * plotWidth < Math.max(22, ticks[labelledTickIndexes[0]].label.length * 6.8) + Math.max(22, ticks[labelledTickIndexes[1]].label.length * 6.8) + 5;
+    for (const [index, { value, label, major }] of ticks.entries()) {
+      const percent = (value - domain.minimum) / (domain.maximum - domain.minimum) * 100;
+      const breakPosition = axisBreak === "minimum" ? 40 : axisBreak === "maximum" ? 60 : void 0;
+      if (breakPosition !== void 0 && Math.abs(percent - breakPosition) < 4)
+        continue;
+      const labelClass = endpointsAreClose && index === labelledTickIndexes[0] ? " is-outward-left" : endpointsAreClose && index === labelledTickIndexes[1] ? " is-outward-right" : anchorEndpoints && index === labelledTickIndexes[0] && percent <= 12 ? " is-first" : anchorEndpoints && index === labelledTickIndexes[labelledTickIndexes.length - 1] && percent >= 88 ? " is-last" : percent === 0 ? " is-first" : percent === 100 ? " is-last" : "";
+      const tick = element2("span", {
+        className: `inquiry-flow-ruler-tick${major ? " is-major" : ""}${label ? "" : " is-unlabelled"}`
+      }, label ? [element2("span", {
+        className: `inquiry-flow-ruler-label${labelClass}`,
+        textContent: label
+      })] : []);
+      tick.style.left = `${percent}%`;
+      ruler.append(tick);
+    }
+    return ruler;
   }
-  function renderEvidenceImpactPreview({
-    i18n: i18n2,
-    scaleMessages,
-    formatMessage: formatMessage2,
-    posterior,
-    meanShift,
-    saturationThresholdDecibans,
-    forceExtentDecibans,
-    label = "Selected evidence impact"
-  }) {
-    const geometry = buildEvidenceImpactPreviewGeometry(
-      posterior,
-      meanShift,
-      saturationThresholdDecibans,
-      forceExtentDecibans
-    );
-    const { posteriorBand } = geometry;
-    const position = geometry.position;
-    const track = element("div", {
+
+  // packages/evidence-diagrams-dom/dist/credibility/endpoint-editing.js
+  function placeEndpointHandle(handle, bound, percent) {
+    const inward = bound === "lower" && percent <= 12 || bound === "upper" && percent >= 88;
+    handle.classList.toggle("is-inward", inward);
+    handle.style.left = `${percent}%`;
+    handle.style.setProperty("--prior-anchor", inward === (bound === "lower") ? "0%" : "100%");
+  }
+  function renderEndpointHandles({ track, band: band3, domain, messages, saturationThresholdDecibans, formatPercent, onEditEndpoint }) {
+    const toPercent = (value) => Math.max(0, Math.min(100, (value - domain.minimum) / (domain.maximum - domain.minimum) * 100));
+    track.style.setProperty("--caret-x", `${toPercent(band3.lower)}%`);
+    track.style.setProperty("--prior-color", credibilityAxisColor(band3.lower, { saturationThresholdDecibans }));
+    const handles = ["lower", "upper"].map((bound) => {
+      const value = band3[bound];
+      const handle = element2("button", {
+        type: "button",
+        className: `prior-handle inquiry-prior-handle prior-handle-${bound === "lower" ? "min" : "max"} is-${bound}`,
+        dataset: { priorBound: bound },
+        role: "slider",
+        "aria-label": bound === "lower" ? messages.priorLowerHandle : messages.priorUpperHandle,
+        "aria-valuemin": domain.minimum,
+        "aria-valuemax": domain.maximum,
+        "aria-valuenow": Math.max(domain.minimum, Math.min(domain.maximum, value)),
+        "aria-valuetext": formatAxisProbability(value, formatPercent)
+      });
+      placeEndpointHandle(handle, bound, toPercent(value));
+      handle.style.setProperty("--prior-color", credibilityAxisColor(value, { saturationThresholdDecibans }));
+      handle.addEventListener("keydown", (event) => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
+          return;
+        event.preventDefault();
+        const step = event.shiftKey ? 5 : 1;
+        const currentValue = Number(handle.getAttribute("aria-valuenow"));
+        const next = event.key === "Home" ? domain.minimum : event.key === "End" ? domain.maximum : currentValue + (event.key === "ArrowRight" ? step : -step);
+        onEditEndpoint?.({ bound, value: next, domain, restoreFocus: true });
+      });
+      return handle;
+    });
+    track.append(...handles);
+  }
+
+  // packages/evidence-diagrams-dom/dist/credibility/render-axis.js
+  var CREDIBILITY_BAND_HEIGHT_REM = 0.625;
+  function formatBandEndpoint(decibans, direction, formatPercent) {
+    const display = formatProbabilityDisplay(decibans, direction);
+    const percentage = formatPercent(display.value / 100, { maximumFractionDigits: 12 });
+    return display.operator === void 0 ? percentage : `${display.operator} ${percentage}`;
+  }
+  function renderBandValue(band3, saturationThresholdDecibans, formatPercent) {
+    const exact = band3.lower === band3.upper;
+    const value = element2("span", {
+      className: `inquiry-flow-axis-value${exact ? " is-exact" : ""}`
+    });
+    const lower = element2("span", {
+      className: "inquiry-flow-axis-endpoint is-lower",
+      textContent: formatBandEndpoint(band3.lower, exact ? "exact" : "lower", formatPercent)
+    });
+    lower.style.color = credibilityAxisColor(band3.lower, { saturationThresholdDecibans });
+    if (exact) {
+      value.append(lower);
+      return value;
+    }
+    const upper = element2("span", {
+      className: "inquiry-flow-axis-endpoint is-upper",
+      textContent: formatBandEndpoint(band3.upper, "upper", formatPercent)
+    });
+    upper.style.color = credibilityAxisColor(band3.upper, { saturationThresholdDecibans });
+    value.append(lower, element2("span", {
+      className: "inquiry-flow-axis-separator",
+      textContent: "–"
+    }), upper);
+    return value;
+  }
+  function renderCredibilityAxis(options) {
+    const { label, band: band3, position, domain, className = "", saturationThresholdDecibans, plotWidth, messages, formatPercent, editable = false, background, overlay, ruler: rulerMode = { kind: "probability" }, rulerPlacement = "above", secondaryRuler: secondaryRulerMode, showValue = true, resetVisible = false, onReset, onEditEndpoint } = options;
+    validateCredibilityAxisDomain(domain);
+    if (editable && !messages) {
+      throw new TypeError("Editable credibility axes require handle and reset messages.");
+    }
+    const track = element2("div", {
       className: "inquiry-flow-axis-track posterior-track",
       "aria-hidden": "true"
     });
-    const band3 = element("span", { className: "inquiry-flow-axis-band posterior-band" });
-    const visible = posteriorBand.upper >= geometry.minimum && posteriorBand.lower <= geometry.maximum;
-    const exact = posteriorBand.lower === posteriorBand.upper;
-    band3.hidden = !visible || exact;
-    band3.style.left = `${position.left}%`;
-    band3.style.width = `${Math.max(position.width, 0.3)}%`;
-    band3.style.background = credibilityBandBackground(posteriorBand, {
-      minimum: geometry.minimum,
-      maximum: geometry.maximum,
-      saturationThresholdDecibans
+    const shape = element2("span", {
+      className: `inquiry-flow-axis-band posterior-band ${className}`
     });
+    shape.style.left = `${position.left}%`;
+    shape.style.width = `${Math.max(position.width, 0.3)}%`;
+    if (background)
+      shape.style.background = background;
+    const visible = band3.upper >= domain.minimum && band3.lower <= domain.maximum;
+    const axisBreak = band3.upper < domain.minimum ? "minimum" : band3.lower > domain.maximum ? "maximum" : void 0;
+    const exact = band3.lower === band3.upper;
+    shape.hidden = !visible || exact;
     track.classList.toggle("is-exact", exact && visible);
-    track.classList.toggle("is-clipped-minimum", position.clippedMinimum);
-    track.classList.toggle("is-clipped-maximum", position.clippedMaximum);
     track.style.setProperty("--posterior-x", `${position.center}%`);
-    track.style.setProperty("--posterior-minimum-color", credibilityAxisColor(posteriorBand.lower, { saturationThresholdDecibans }));
-    track.style.setProperty("--posterior-maximum-color", credibilityAxisColor(posteriorBand.upper, { saturationThresholdDecibans }));
-    const arrowLayer = element("span", {
-      className: "inquiry-force-arrow-layer",
-      "aria-hidden": "true"
-    }, [renderForceArrow(
-      meanShift,
-      forceExtentDecibans ?? (geometry.maximum - geometry.minimum) / 2,
-      evidenceStrengthColor({
-        netWeightDecibans: meanShift,
-        absoluteWeightDecibans: Math.abs(meanShift),
-        dissonance: 0
-      }, { saturationThresholdDecibans })
-    )]);
-    track.append(band3, arrowLayer);
-    const ruler = element("div", { className: "inquiry-flow-ruler", "aria-hidden": "true" });
-    for (const [index, value] of [geometry.minimum, (geometry.minimum + geometry.maximum) / 2, geometry.maximum].entries()) {
-      const tick = element("span", {
-        className: index === 0 ? "is-first" : index === 2 ? "is-last" : "",
-        textContent: axisLabel(i18n2, value)
-      });
-      tick.style.left = `${index * 50}%`;
-      ruler.append(tick);
+    track.style.setProperty("--posterior-minimum-color", credibilityAxisColor(band3.lower, { saturationThresholdDecibans }));
+    track.style.setProperty("--posterior-maximum-color", credibilityAxisColor(band3.upper, { saturationThresholdDecibans }));
+    track.append(shape);
+    if (overlay)
+      track.append(overlay);
+    if (axisBreak) {
+      track.append(element2("span", {
+        className: `inquiry-flow-axis-break is-${axisBreak}`,
+        "aria-hidden": "true",
+        textContent: "//"
+      }));
     }
-    return element("div", {
-      className: "inquiry-evidence-impact-preview",
-      role: "img",
-      "aria-label": label
+    if (editable && messages) {
+      track.classList.add("prior-track");
+      track.removeAttribute("aria-hidden");
+      renderEndpointHandles({
+        track,
+        band: band3,
+        domain,
+        messages,
+        saturationThresholdDecibans,
+        formatPercent,
+        onEditEndpoint
+      });
+    }
+    const ticks = rulerMode.kind === "relative-decibans" ? relativeDecibanTicks({ domain, origin: rulerMode.origin }) : probabilityTicks({ domain, plotWidth, formatPercent, positions: rulerMode.positions });
+    const ruler = renderRuler({ domain, ticks, relativeDecibans: rulerMode.kind === "relative-decibans", axisBreak });
+    const secondaryTicks = secondaryRulerMode?.kind === "relative-decibans" ? relativeDecibanTicks({ domain, origin: secondaryRulerMode.origin }) : secondaryRulerMode ? probabilityTicks({
+      domain,
+      plotWidth,
+      formatPercent,
+      positions: secondaryRulerMode.positions
+    }) : void 0;
+    const secondaryRuler = secondaryTicks && secondaryRulerMode ? renderRuler({
+      domain,
+      ticks: secondaryTicks,
+      relativeDecibans: secondaryRulerMode.kind === "relative-decibans",
+      axisBreak,
+      anchorEndpoints: secondaryRulerMode.kind === "probability" && secondaryRulerMode.positions !== void 0,
+      plotWidth
+    }) : void 0;
+    secondaryRuler?.classList.add("is-secondary");
+    const reset = editable && resetVisible && messages ? element2("button", {
+      type: "button",
+      className: "inquiry-prior-reset",
+      "aria-label": messages.resetPrior,
+      title: messages.resetPrior,
+      textContent: "↺"
+    }) : void 0;
+    if (onReset)
+      reset?.addEventListener("click", onReset);
+    const primaryVisuals = rulerPlacement === "below" ? [track, ruler] : [ruler, track];
+    const axis = element2("div", {
+      className: `inquiry-flow-axis ${className}${reset ? " has-prior-reset" : ""}`
     }, [
-      ruler,
-      track,
-      renderForceScaleRuler(
-        scaleMessages,
-        i18n2,
-        formatMessage2,
-        forceExtentDecibans ?? (geometry.maximum - geometry.minimum) / 2
-      )
+      label ? element2("strong", { textContent: label }) : void 0,
+      showValue ? renderBandValue(band3, saturationThresholdDecibans, formatPercent) : void 0,
+      ...primaryVisuals,
+      secondaryRuler,
+      reset
     ]);
+    axis.style.setProperty("--credibility-band-height", `${CREDIBILITY_BAND_HEIGHT_REM}rem`);
+    const refreshProbabilityRuler = (target, positions, secondary = false) => {
+      if (!axis.isConnected)
+        return;
+      const mountedWidth = target.getBoundingClientRect().width;
+      if (mountedWidth <= 0 || Math.abs(mountedWidth - plotWidth) < 1)
+        return;
+      const refreshed = renderRuler({
+        domain,
+        ticks: probabilityTicks({ domain, plotWidth: mountedWidth, formatPercent, positions }),
+        axisBreak,
+        anchorEndpoints: positions !== void 0,
+        plotWidth: mountedWidth
+      });
+      if (secondary)
+        refreshed.classList.add("is-secondary");
+      target.replaceWith(refreshed);
+    };
+    if (rulerMode.kind === "probability" || secondaryRulerMode?.kind === "probability") {
+      globalThis.requestAnimationFrame?.(() => {
+        if (rulerMode.kind === "probability")
+          refreshProbabilityRuler(ruler, rulerMode.positions);
+        if (secondaryRulerMode?.kind === "probability" && secondaryRuler) {
+          refreshProbabilityRuler(secondaryRuler, secondaryRulerMode.positions, true);
+        }
+      });
+    }
+    return axis;
+  }
+
+  // packages/evidence-diagrams-dom/dist/evidence-impact/calculate-geometry.js
+  var IMPACT_LAYOUT = {
+    trackHeightRem: 5.9,
+    conditionalCenterRem: 0.8,
+    weightTopRem: 3.55,
+    weightHeightRem: 0.5,
+    currentCenterRem: 5.25
+  };
+  var CONDITIONAL_SHARE = 0.45;
+  function selectedBandValue(band3, selectedBound) {
+    return band3[selectedBound];
+  }
+  function selectBound(before, conditional) {
+    const shift = (conditional.lower + conditional.upper - before.lower - before.upper) / 2;
+    if (shift > 1e-12)
+      return "lower";
+    if (shift < -1e-12)
+      return "upper";
+    return Math.abs(before.lower) <= Math.abs(before.upper) ? "lower" : "upper";
+  }
+  function buildEvidenceImpactPreviewGeometry({ before, conditional, after, premiseWeight: premiseWeight2 }) {
+    const beforeBand = gaussianToBand(before);
+    const conditionalBand = gaussianToBand(conditional);
+    const afterBand = gaussianToBand(after);
+    const selectedBound = selectBound(beforeBand, conditionalBand);
+    const beforeBound = selectedBandValue(beforeBand, selectedBound);
+    const conditionalBound = selectedBandValue(conditionalBand, selectedBound);
+    const currentBound = selectedBandValue(afterBand, selectedBound);
+    const conditionalMovement = conditionalBound - beforeBound;
+    const currentMovement = currentBound - beforeBound;
+    const tolerance = 1e-9 * Math.max(1, Math.abs(currentMovement), Math.abs(conditionalMovement));
+    const proportionalWeighting = Math.abs(currentMovement - conditionalMovement * premiseWeight2) <= tolerance;
+    const largestMovement = Math.max(Math.abs(conditionalMovement), Math.abs(currentMovement));
+    const extent = largestMovement > 1e-12 ? largestMovement / (CONDITIONAL_SHARE * 2) : 1;
+    const origin = beforeBound;
+    const minimum = origin - extent;
+    const maximum = origin + extent;
+    const clippedLower = Math.max(minimum, Math.min(maximum, afterBand.lower));
+    const clippedUpper = Math.max(minimum, Math.min(maximum, afterBand.upper));
+    return {
+      minimum,
+      maximum,
+      origin,
+      extent,
+      selectedBound,
+      beforeBound,
+      conditionalBound,
+      currentBound,
+      conditionalMovement,
+      currentMovement,
+      proportionalWeighting,
+      afterBand,
+      position: {
+        left: (clippedLower - minimum) / (maximum - minimum) * 100,
+        width: Math.max(0, (clippedUpper - clippedLower) / (maximum - minimum) * 100),
+        center: (Math.max(minimum, Math.min(maximum, after.mean)) - minimum) / (maximum - minimum) * 100,
+        clippedMinimum: afterBand.lower < minimum,
+        clippedMaximum: afterBand.upper > maximum
+      }
+    };
+  }
+
+  // packages/evidence-diagrams-dom/dist/evidence-impact/draw-impact.js
+  var SVG_NAMESPACE2 = "http://www.w3.org/2000/svg";
+  var REM_PIXELS = 16;
+  var IMPACT_VIEWBOX_HEIGHT = IMPACT_LAYOUT.trackHeightRem * REM_PIXELS;
+  var ARROW_BODY_HALF_HEIGHT = CREDIBILITY_BAND_HEIGHT_REM * REM_PIXELS / 2;
+  var ARROW_HEAD_HALF_HEIGHT = 0.5625 * REM_PIXELS;
+  var ARROW_TIP_HALF_HEIGHT = 0.04 * REM_PIXELS;
+  var ARROW_HEAD_LENGTH = 4.5;
+  var CONNECTOR_WIDTH = 0.5;
+  function svgElement2(tag, attributes = {}) {
+    const node = document.createElementNS(SVG_NAMESPACE2, tag);
+    for (const [key, value] of Object.entries(attributes))
+      node.setAttribute(key, String(value));
+    return node;
+  }
+  function appendArrow(drawing, className, end, center) {
+    const origin = 50;
+    const length = Math.abs(end - origin);
+    if (length <= 1e-12)
+      return;
+    const direction = Math.sign(end - origin);
+    const headBase = end - direction * Math.min(ARROW_HEAD_LENGTH, length);
+    const points = [
+      [origin, center - ARROW_BODY_HALF_HEIGHT],
+      [headBase, center - ARROW_BODY_HALF_HEIGHT],
+      [headBase, center - ARROW_HEAD_HALF_HEIGHT],
+      [end, center - ARROW_TIP_HALF_HEIGHT],
+      [end, center + ARROW_TIP_HALF_HEIGHT],
+      [headBase, center + ARROW_HEAD_HALF_HEIGHT],
+      [headBase, center + ARROW_BODY_HALF_HEIGHT],
+      [origin, center + ARROW_BODY_HALF_HEIGHT]
+    ];
+    drawing.append(svgElement2("polygon", {
+      class: className,
+      points: points.map((point) => point.join(",")).join(" ")
+    }));
+  }
+  function appendBar(drawing, conditionalEnd, weightedEnd) {
+    const y = IMPACT_LAYOUT.weightTopRem * REM_PIXELS;
+    const height = IMPACT_LAYOUT.weightHeightRem * REM_PIXELS;
+    const extentX = Math.min(50, conditionalEnd);
+    const extentWidth = Math.abs(conditionalEnd - 50);
+    const fillX = Math.min(50, weightedEnd);
+    const fillWidth = Math.abs(weightedEnd - 50);
+    drawing.append(svgElement2("rect", {
+      class: "inquiry-impact-weight-extent",
+      x: extentX,
+      y,
+      width: extentWidth,
+      height
+    }));
+    drawing.append(svgElement2("rect", {
+      class: "inquiry-impact-weight-fill",
+      x: fillX,
+      y,
+      width: fillWidth,
+      height
+    }));
+    if (extentWidth > 1) {
+      const horizontalInset = 0.4;
+      const verticalInset = 1;
+      drawing.append(svgElement2("path", {
+        class: "inquiry-impact-weight-frame",
+        "fill-rule": "evenodd",
+        d: `M ${extentX} ${y} H ${extentX + extentWidth} V ${y + height} H ${extentX} Z M ${extentX + horizontalInset} ${y + verticalInset} H ${extentX + extentWidth - horizontalInset} V ${y + height - verticalInset} H ${extentX + horizontalInset} Z`
+      }));
+    }
+  }
+  function impactConnector(className, end, y, height, support) {
+    return svgElement2("rect", {
+      class: className,
+      x: support ? end - CONNECTOR_WIDTH : end,
+      y,
+      width: CONNECTOR_WIDTH,
+      height
+    });
+  }
+  function arrowTone(meanShift) {
+    return meanShift > 1e-12 ? "support" : meanShift < -1e-12 ? "opposition" : "neutral";
+  }
+  function endpoint(origin, offset) {
+    return Math.max(0, Math.min(100, origin + offset));
+  }
+  function renderImpactDrawing({ conditionalEnd, weightedEnd, currentEnd, direction, conditionalMeanShift, currentMeanShift, proportionalWeighting }) {
+    const conditionalCenter = IMPACT_LAYOUT.conditionalCenterRem * REM_PIXELS;
+    const weightTop = IMPACT_LAYOUT.weightTopRem * REM_PIXELS;
+    const weightBottom = weightTop + IMPACT_LAYOUT.weightHeightRem * REM_PIXELS;
+    const currentCenter = IMPACT_LAYOUT.currentCenterRem * REM_PIXELS;
+    const support = conditionalEnd >= 50;
+    const drawing = svgElement2("svg", {
+      class: `inquiry-impact-drawing${direction}`,
+      viewBox: `0 0 100 ${IMPACT_VIEWBOX_HEIGHT}`,
+      preserveAspectRatio: "none",
+      "aria-hidden": "true"
+    });
+    drawing.append(svgElement2("line", {
+      class: "inquiry-impact-origin-guide",
+      x1: 50,
+      y1: conditionalCenter,
+      x2: 50,
+      y2: currentCenter
+    }));
+    if (proportionalWeighting) {
+      drawing.append(impactConnector("inquiry-impact-conditional-connector", conditionalEnd, conditionalCenter, weightTop - conditionalCenter, support), impactConnector("inquiry-impact-attenuation-connector", weightedEnd, weightBottom, currentCenter - weightBottom, support));
+      appendBar(drawing, conditionalEnd, weightedEnd);
+    }
+    appendArrow(drawing, `inquiry-impact-arrow inquiry-impact-conditional-arrow is-${arrowTone(conditionalMeanShift)}`, conditionalEnd, conditionalCenter);
+    appendArrow(drawing, `inquiry-impact-arrow inquiry-impact-current-arrow is-${arrowTone(currentMeanShift)}`, currentEnd, currentCenter);
+    return drawing;
+  }
+
+  // packages/evidence-diagrams-dom/dist/evidence-impact/render-preview.js
+  function renderEvidenceImpactPreview({ before, conditional, after, premiseWeight: premiseWeight2, saturationThresholdDecibans, formatPercent, formatConclusion, formatAriaLabel, texts, label = "Selected Evidence impact" }) {
+    const geometry = buildEvidenceImpactPreviewGeometry({ before, conditional, after, premiseWeight: premiseWeight2 });
+    const { afterBand, position, extent, selectedBound, beforeBound, conditionalBound, currentBound, conditionalMovement, currentMovement, proportionalWeighting } = geometry;
+    const meanShift = after.mean - before.mean;
+    const conditionalMeanShift = conditional.mean - before.mean;
+    const widthShift = after.standardDeviation - before.standardDeviation;
+    const formattedConclusion = formatConclusion({
+      meanShift,
+      standardDeviationShift: widthShift
+    });
+    const formattedConditionalConclusion = formatConclusion({
+      meanShift: conditionalMeanShift,
+      standardDeviationShift: conditional.standardDeviation - before.standardDeviation
+    });
+    const arrowColor = evidenceStrengthColor({
+      netWeightDecibans: meanShift,
+      absoluteWeightDecibans: Math.abs(meanShift),
+      dissonance: 0
+    }, { saturationThresholdDecibans });
+    const conditionalOffset = conditionalMovement / extent * 50;
+    const currentOffset = currentMovement / extent * 50;
+    const weightedOffset = proportionalWeighting ? conditionalOffset * premiseWeight2 : currentOffset;
+    const conditionalEnd = endpoint(50, conditionalOffset);
+    const weightedEnd = endpoint(50, weightedOffset);
+    const currentEnd = endpoint(50, currentOffset);
+    const direction = conditionalMeanShift < 0 ? " is-opposition" : conditionalMeanShift > 0 ? " is-support" : "";
+    const movementDirection = conditionalMovement < 0 ? " is-leftward" : " is-rightward";
+    const weightPercent = formatPercent(premiseWeight2, { maximumFractionDigits: 1 });
+    const weightCopy = proportionalWeighting ? texts.proportionalWeight : texts.rearrangedWeight;
+    const weightLabel = element2("span", {
+      className: `inquiry-impact-weight-label${direction}${movementDirection}`,
+      title: texts.weightTitle
+    }, [
+      element2("span", { className: "inquiry-impact-weight-copy", textContent: weightCopy }),
+      " ",
+      element2("span", { className: "inquiry-impact-weight-applied" }, [
+        element2("strong", {
+          className: "inquiry-impact-weight-percent",
+          textContent: weightPercent
+        }),
+        proportionalWeighting ? ` ${texts.applies}` : ""
+      ])
+    ]);
+    const overlay = element2("span", {
+      className: `inquiry-impact-overlay${direction}${movementDirection}${proportionalWeighting ? "" : " is-rearranged"}`,
+      "aria-hidden": "true"
+    }, [
+      renderImpactDrawing({
+        conditionalEnd,
+        weightedEnd,
+        currentEnd,
+        direction: `${direction}${movementDirection}${proportionalWeighting ? "" : " is-rearranged"}`,
+        conditionalMeanShift,
+        currentMeanShift: meanShift,
+        proportionalWeighting
+      }),
+      element2("span", {
+        className: `inquiry-impact-conditional-label${direction}${movementDirection}`,
+        textContent: `${texts.conditional} ${formattedConditionalConclusion.result}`
+      }),
+      weightLabel
+    ]);
+    const axis = renderCredibilityAxis({
+      band: afterBand,
+      position,
+      domain: { minimum: geometry.minimum, maximum: geometry.maximum },
+      className: "is-current inquiry-evidence-impact-axis",
+      saturationThresholdDecibans,
+      plotWidth: 400,
+      formatPercent,
+      background: credibilityBandBackground(afterBand, {
+        minimum: geometry.minimum,
+        maximum: geometry.maximum,
+        saturationThresholdDecibans
+      }),
+      overlay,
+      ruler: { kind: "relative-decibans", origin: geometry.origin },
+      secondaryRuler: { kind: "probability", positions: [beforeBound, currentBound] },
+      showValue: false
+    });
+    axis.style.setProperty("--impact-track-height", `${IMPACT_LAYOUT.trackHeightRem}rem`);
+    axis.style.setProperty("--impact-band-height", `${CREDIBILITY_BAND_HEIGHT_REM}rem`);
+    axis.style.setProperty("--impact-conditional-center", `${IMPACT_LAYOUT.conditionalCenterRem}rem`);
+    axis.style.setProperty("--impact-weight-center", `${IMPACT_LAYOUT.weightTopRem + IMPACT_LAYOUT.weightHeightRem / 2}rem`);
+    axis.style.setProperty("--impact-axis-top", `${IMPACT_LAYOUT.currentCenterRem - CREDIBILITY_BAND_HEIGHT_REM / 2}rem`);
+    const conclusion = element2("p", {
+      className: "inquiry-impact-conclusion"
+    }, [
+      element2("span", {
+        className: "inquiry-impact-conclusion-label",
+        textContent: formattedConclusion.label
+      }),
+      " ",
+      element2("strong", {
+        className: "inquiry-impact-conclusion-result",
+        textContent: formattedConclusion.result
+      })
+    ]);
+    conclusion.style.setProperty("--impact-result-color", arrowColor);
+    const ariaLabel = formatAriaLabel({
+      label,
+      selectedBound,
+      beforeBound,
+      conditionalBound,
+      currentBound,
+      conditionalMeanShift,
+      premiseWeight: premiseWeight2,
+      currentMeanShift: meanShift,
+      conclusion: formattedConclusion.result
+    });
+    const visual = element2("div", {
+      className: "inquiry-evidence-impact-visual",
+      role: "img",
+      "aria-label": ariaLabel
+    }, [axis, conclusion]);
+    return element2("div", {
+      className: "inquiry-evidence-impact-preview",
+      "data-selected-bound": selectedBound,
+      "data-before-bound": String(beforeBound),
+      "data-conditional-bound": String(conditionalBound),
+      "data-current-bound": String(currentBound),
+      "data-proportional-weighting": String(proportionalWeighting)
+    }, [visual]);
+  }
+
+  // packages/evidence-diagrams-dom/dist/evidence-summary/summary.js
+  function summarizeCollapsedEvidence({ meanChanges, extentDecibans }) {
+    if (!Number.isFinite(extentDecibans) || extentDecibans <= 0) {
+      throw new RangeError("The collapsed Evidence display extent must be a finite positive number.");
+    }
+    const contributions = [...meanChanges].map((weightDecibans) => {
+      if (!Number.isFinite(weightDecibans))
+        throw new RangeError("Mean changes must be finite.");
+      return { weightDecibans };
+    });
+    const aggregate = aggregateEvidence(contributions);
+    let supportDecibans = 0;
+    let oppositionDecibans = 0;
+    let supportCount = 0;
+    let oppositionCount = 0;
+    for (const { weightDecibans } of contributions) {
+      if (weightDecibans > 0) {
+        supportDecibans += weightDecibans;
+        supportCount += 1;
+      }
+      if (weightDecibans < 0) {
+        oppositionDecibans -= weightDecibans;
+        oppositionCount += 1;
+      }
+    }
+    return {
+      ...aggregate,
+      supportDecibans,
+      oppositionDecibans,
+      supportCount,
+      oppositionCount,
+      supportPercent: Math.min(100, supportDecibans / extentDecibans * 100),
+      oppositionPercent: Math.min(100, oppositionDecibans / extentDecibans * 100)
+    };
+  }
+  function appendText(parent, className, value) {
+    const node = document.createElement("span");
+    node.className = className;
+    node.textContent = value;
+    parent.append(node);
+    return node;
+  }
+  function accumulatedArrow(direction, percent) {
+    const arrow = document.createElement("span");
+    arrow.className = `collapsed-evidence-summary-arrow is-${direction}`;
+    arrow.hidden = percent === 0;
+    return arrow;
+  }
+  function renderCollapsedEvidenceSummary({ meanChanges, extentDecibans, formatWeight, oppositionLabel, supportLabel, formatDirectionalLabel = (label) => label, headingLabel = "Mean change", middleMetric, ariaLabel }) {
+    const summary = summarizeCollapsedEvidence({ meanChanges, extentDecibans });
+    const oppositionHeading = formatDirectionalLabel(oppositionLabel, summary.oppositionCount);
+    const supportHeading = formatDirectionalLabel(supportLabel, summary.supportCount);
+    const root = document.createElement("span");
+    root.className = "collapsed-evidence-summary";
+    root.style.setProperty("--credibility-band-height", `${CREDIBILITY_BAND_HEIGHT_REM}rem`);
+    root.setAttribute("role", "img");
+    const middleDescription = middleMetric ? ` ${middleMetric.label}: ${middleMetric.value}.` : "";
+    root.setAttribute("aria-label", ariaLabel ?? `${headingLabel}. ${oppositionHeading}: ${formatWeight(summary.oppositionDecibans)}.${middleDescription} ${supportHeading}: ${formatWeight(summary.supportDecibans)}.`);
+    root.style.setProperty("--collapsed-opposition", `${summary.oppositionPercent}%`);
+    root.style.setProperty("--collapsed-support", `${summary.supportPercent}%`);
+    const opposition = document.createElement("span");
+    opposition.className = "collapsed-evidence-summary-total is-opposition";
+    appendText(opposition, "collapsed-evidence-summary-label", oppositionHeading);
+    appendText(opposition, "collapsed-evidence-summary-value", formatWeight(summary.oppositionDecibans));
+    const support = document.createElement("span");
+    support.className = "collapsed-evidence-summary-total is-support";
+    appendText(support, "collapsed-evidence-summary-label", supportHeading);
+    appendText(support, "collapsed-evidence-summary-value", formatWeight(summary.supportDecibans));
+    const middle = middleMetric ? document.createElement("span") : void 0;
+    if (middle && middleMetric) {
+      middle.className = `collapsed-evidence-summary-total is-dissonance${middleMetric.zero ? " is-zero" : ""}`;
+      appendText(middle, "collapsed-evidence-summary-label", middleMetric.label);
+      appendText(middle, "collapsed-evidence-summary-value", middleMetric.value);
+    }
+    const line = document.createElement("span");
+    line.className = "collapsed-evidence-summary-line";
+    line.setAttribute("aria-hidden", "true");
+    line.append(accumulatedArrow("opposition", summary.oppositionPercent), accumulatedArrow("support", summary.supportPercent), Object.assign(document.createElement("i"), { className: "collapsed-evidence-summary-center" }));
+    root.append(opposition);
+    if (middle)
+      root.append(middle);
+    root.append(line, support);
+    return root;
+  }
+
+  // demo/src/components/evidence-impact-preview.ts
+  function renderEvidenceImpactPreview2({
+    i18n: i18n2,
+    before,
+    conditional,
+    after,
+    premiseWeight: premiseWeight2,
+    premiseState,
+    saturationThresholdDecibans,
+    label
+  }) {
+    const messages = i18n2.messages.inquiry.detail;
+    const condition = premiseState === "true" ? messages.premiseTrue : messages.premiseFalse;
+    const premiseWeightText = premiseState === "true" ? {
+      proportionalWeight: messages.premiseCredibilitySentence,
+      rearrangedWeight: messages.atPremiseCredibility,
+      weightTitle: messages.premiseCredibilityTitle
+    } : {
+      proportionalWeight: messages.premiseFalseProbabilitySentence,
+      rearrangedWeight: messages.atPremiseFalseProbability,
+      weightTitle: messages.premiseFalseProbabilityTitle
+    };
+    return renderEvidenceImpactPreview({
+      before,
+      conditional,
+      after,
+      premiseWeight: premiseWeight2,
+      saturationThresholdDecibans,
+      label,
+      formatPercent: i18n2.percent,
+      texts: {
+        conditional: i18n2.formatMessage(messages.conditionalImpactSentence, { condition }),
+        proportionalWeight: premiseWeightText.proportionalWeight,
+        rearrangedWeight: premiseWeightText.rearrangedWeight,
+        applies: messages.premiseCredibilityApplies,
+        weightTitle: premiseWeightText.weightTitle
+      },
+      formatConclusion: ({ meanShift, standardDeviationShift }) => {
+        const strength = i18n2.messages.inquiry.strength;
+        if (Math.abs(meanShift) > 1e-12) {
+          return {
+            label: messages.currentImpactSentence,
+            result: i18n2.formatMessage(
+              meanShift > 0 ? strength.strengthSupport : strength.strengthOpposition,
+              { strength: formatJeffreysStrength(i18n2, meanShift) }
+            )
+          };
+        }
+        return {
+          label: Math.abs(standardDeviationShift) > 1e-12 ? messages.currentImpactUncertaintySentence : messages.currentImpactSentence,
+          result: Math.abs(standardDeviationShift) > 1e-12 ? strength.strengthWidth : strength.strengthNone
+        };
+      },
+      formatAriaLabel: ({
+        selectedBound,
+        beforeBound,
+        conditionalBound,
+        currentBound,
+        conditionalMeanShift,
+        currentMeanShift,
+        conclusion
+      }) => i18n2.formatMessage(messages.selectedEvidenceImpactAria, {
+        label,
+        condition,
+        bound: selectedBound,
+        before: i18n2.number(beforeBound, { maximumFractionDigits: 2 }),
+        conditional: i18n2.number(conditionalBound, { maximumFractionDigits: 2 }),
+        current: i18n2.number(currentBound, { maximumFractionDigits: 2 }),
+        conditionalMean: i18n2.number(conditionalMeanShift, { maximumFractionDigits: 2 }),
+        weight: i18n2.percent(premiseWeight2, { maximumFractionDigits: 1 }),
+        currentMean: i18n2.number(currentMeanShift, { maximumFractionDigits: 2 }),
+        conclusion
+      })
+    });
+  }
+
+  // demo/src/components/premise-condition-control.ts
+  function createPremiseConditionControl({
+    label,
+    initialState = "true",
+    trueLabel,
+    falseLabel,
+    changeToTrue,
+    changeToFalse,
+    onChange
+  }) {
+    let state = initialState;
+    const button = element("button", { type: "button", className: "inquiry-premise-state" }, [
+      element("span", { className: "inquiry-premise-state-value" }),
+      element("span", { className: "inquiry-premise-state-icon", "aria-hidden": "true", textContent: "⇄" })
+    ]);
+    const update = () => {
+      const currentLabel = state === "true" ? trueLabel : falseLabel;
+      const nextAction = state === "true" ? changeToFalse : changeToTrue;
+      button.dataset.premiseState = state;
+      button.setAttribute("aria-label", `${label}: ${currentLabel}. ${nextAction}`);
+      button.title = `${label}: ${currentLabel}. ${nextAction}`;
+      const value = button.querySelector(".inquiry-premise-state-value");
+      if (value) value.textContent = currentLabel;
+    };
+    button.addEventListener("click", () => {
+      state = state === "true" ? "false" : "true";
+      update();
+      onChange?.({ premiseState: state });
+    });
+    update();
+    return { element: button, value: () => state };
   }
 
   // demo/src/components/evidence-panel.ts
@@ -3794,11 +4719,11 @@ button.is-danger { color: #8b2635; }
   function stepForEvidence(evaluation, item) {
     return evaluationForClaim(evaluation, item.targetClaimId)?.steps.find((step) => step.evidenceId === item.id);
   }
-  function narrativeHeading(messages, premiseProbability) {
-    return premiseProbability < 0.5 ? messages.butGivenClaimCredibility : messages.andGivenClaimCredibility;
+  function narrativeHeading(messages, premiseWeight2) {
+    return premiseWeight2 < 0.5 ? messages.butGivenClaimCredibility : messages.andGivenClaimCredibility;
   }
-  function formattedPremiseProbability(i18n2, premiseProbability) {
-    return `≈ ${i18n2.percent(premiseProbability)}`;
+  function formattedPremiseWeight(i18n2, premiseWeight2) {
+    return `≈ ${i18n2.percent(premiseWeight2)}`;
   }
   function metricValue(text, color2, dataset = {}) {
     const value = element("strong", {
@@ -3824,18 +4749,6 @@ button.is-danger { color: #8b2635; }
     }
     parts.push(document.createTextNode(sentence.slice(cursor)));
     return parts;
-  }
-  function updateCurrentStrength(node, i18n2, formatMessage2, messages, before, after) {
-    const meanShift = after.mean - before.mean;
-    if (Math.abs(meanShift) > 1e-12) {
-      node.textContent = formatMessage2(
-        meanShift > 0 ? messages.strengthSupport : messages.strengthOpposition,
-        { strength: formatJeffreysStrength(i18n2, meanShift) }
-      );
-      return;
-    }
-    const widthShift = after.standardDeviation - before.standardDeviation;
-    node.textContent = Math.abs(widthShift) > 1e-12 ? messages.strengthWidth : messages.strengthNone;
   }
   function formatEndpointProbability(i18n2, decibans, direction = "exact") {
     const display = formatProbabilityDisplay(decibans, direction);
@@ -3941,7 +4854,6 @@ button.is-danger { color: #8b2635; }
     });
     document.body.append(dialog);
     let current;
-    let currentForceExtentDecibans;
     let backdropPointerDown = false;
     function requireSelection(state) {
       const item = evidenceById(state.inquiry, state.evidenceId);
@@ -3983,7 +4895,6 @@ button.is-danger { color: #8b2635; }
         Math.abs(item.impact.deltaMean),
         Math.abs(conditionalStrengthDefault)
       );
-      currentForceExtentDecibans = forceExtentDecibans;
       const premiseSummary = claimEvidenceSummary(premiseEvaluation);
       const premiseCredibility = renderClaimCredibility(
         i18n2,
@@ -3992,19 +4903,14 @@ button.is-danger { color: #8b2635; }
         premiseSummary,
         saturationThresholdDecibans
       );
-      const strength = element("span", {
-        className: "inquiry-evidence-panel-strength",
-        dataset: { effectMetric: "current" }
-      });
-      updateCurrentStrength(strength, i18n2, i18n2.formatMessage, strengthMessages, step.before, step.after);
-      const impactPreview = renderEvidenceImpactPreview({
+      const impactPreview = renderEvidenceImpactPreview2({
         i18n: i18n2,
-        scaleMessages: conditionalMessages,
-        formatMessage: i18n2.formatMessage,
-        posterior: targetEvaluation.posterior,
-        meanShift: step.after.mean - step.before.mean,
+        before: step.before,
+        conditional: applyImpact(step.before, item.impact, 1),
+        after: step.after,
+        premiseWeight: step.premiseWeight,
+        premiseState: step.premiseState,
         saturationThresholdDecibans,
-        forceExtentDecibans,
         label: i18n2.formatMessage(messages.selectedEvidenceImpact, { target: target.title })
       });
       const title = element("h2", {
@@ -4025,12 +4931,27 @@ button.is-danger { color: #8b2635; }
       }, [
         element("h3", {
           id: "inquiry-evidence-panel-premise-title",
-          textContent: messages.ifClaimIsTrue
+          textContent: messages.premiseHeading
         }),
         element("p", {
           className: "inquiry-evidence-panel-premise-title",
           textContent: premise.title
-        })
+        }),
+        element("div", { className: "inquiry-evidence-panel-premise-condition" }, [
+          element("span", { textContent: messages.premiseIs }),
+          element("span", { className: "inquiry-evidence-panel-premise-choice" }, [
+            createPremiseConditionControl({
+              label: messages.premiseCondition,
+              initialState: step.premiseState,
+              trueLabel: messages.premiseTrue,
+              falseLabel: messages.premiseFalse,
+              changeToTrue: messages.changeToTrue,
+              changeToFalse: messages.changeToFalse,
+              onChange: ({ premiseState }) => changePremiseState(premiseState)
+            }).element,
+            element("span", { textContent: messages.premiseConditionSuffix })
+          ])
+        ])
       ]);
       const premiseCredibilityValue = credibilityInterval(
         i18n2,
@@ -4040,7 +4961,7 @@ button.is-danger { color: #8b2635; }
         premiseCredibility.palette.color
       );
       const estimatedProbability = metricValue(
-        formattedPremiseProbability(i18n2, step.premiseProbability),
+        formattedPremiseWeight(i18n2, step.premiseWeight),
         premiseCredibility.palette.color
       );
       const premiseTitleValue = element("span", {
@@ -4050,7 +4971,7 @@ button.is-danger { color: #8b2635; }
       const premiseWeightingSentence = localizedNodeParts(
         i18n2.formatMessage,
         messages.premiseWeightingSentence,
-        {},
+        { condition: step.premiseState === "true" ? messages.premiseTrue : messages.premiseFalse },
         {
           claim: premiseTitleValue,
           interval: premiseCredibilityValue,
@@ -4087,7 +5008,7 @@ button.is-danger { color: #8b2635; }
         element("h3", {
           id: "inquiry-evidence-panel-effect-title",
           dataset: { narrativeHeading: "" },
-          textContent: narrativeHeading(messages, step.premiseProbability)
+          textContent: narrativeHeading(messages, step.premiseWeight)
         }),
         premiseLink
       ]);
@@ -4100,7 +5021,6 @@ button.is-danger { color: #8b2635; }
           textContent: messages.currentImpactIntro
         }),
         element("div", { className: "inquiry-evidence-panel-conclusion-content" }, [
-          element("p", { className: "inquiry-evidence-panel-current-conclusion" }, [strength]),
           impactPreview,
           hasZeroAssignedImpact(item) ? element("p", {
             className: "inquiry-evidence-panel-no-additional-effect",
@@ -4158,24 +5078,19 @@ button.is-danger { color: #8b2635; }
     }
     function updateLiveEffect() {
       const messages = options.messages();
-      const strengthMessages = options.strengthMessages();
-      const conditionalMessages = options.conditionalMessages();
       const claimCardMessages = options.claimCardMessages();
       const state = selectedState();
-      const { step, target, targetEvaluation } = requireSelection(state);
+      const { item, step, target, targetEvaluation } = requireSelection(state);
       const threshold = state.saturationThresholdDecibans ?? DEFAULT_COLOR_OPTIONS.saturationThresholdDecibans;
-      const metric = dialog.querySelector('[data-effect-metric="current"]');
-      if (!metric) return;
-      updateCurrentStrength(metric, i18n2, i18n2.formatMessage, strengthMessages, step.before, step.after);
       const impactPreview = dialog.querySelector(".inquiry-evidence-impact-preview");
-      impactPreview?.replaceWith(renderEvidenceImpactPreview({
+      impactPreview?.replaceWith(renderEvidenceImpactPreview2({
         i18n: i18n2,
-        scaleMessages: conditionalMessages,
-        formatMessage: i18n2.formatMessage,
-        posterior: targetEvaluation.posterior,
-        meanShift: step.after.mean - step.before.mean,
+        before: step.before,
+        conditional: applyImpact(step.before, item.impact, 1),
+        after: step.after,
+        premiseWeight: step.premiseWeight,
+        premiseState: step.premiseState,
         saturationThresholdDecibans: threshold,
-        forceExtentDecibans: currentForceExtentDecibans,
         label: i18n2.formatMessage(messages.selectedEvidenceImpact, { target: target.title })
       }));
       dialog.querySelector(".inquiry-evidence-panel-target-card")?.replaceWith(
@@ -4190,6 +5105,17 @@ button.is-danger { color: #8b2635; }
       if (!acceptPanelState(next)) return false;
       updateLiveEffect();
       return true;
+    }
+    function changePremiseState(premiseState) {
+      const state = selectedState();
+      const { item } = requireSelection(state);
+      if ((item.premiseState ?? "true") === premiseState) return;
+      const next = callbacks.onPremiseStateChange?.({ evidenceId: state.evidenceId, premiseState });
+      if (!acceptPanelState(next)) return;
+      render();
+      requestAnimationFrame(() => {
+        dialog.querySelector(`button[data-premise-state="${premiseState}"]`)?.focus();
+      });
     }
     dialog.addEventListener("click", (event) => {
       const button = event.target instanceof Element ? event.target.closest("button[data-action]") : null;
@@ -4328,7 +5254,8 @@ button.is-danger { color: #8b2635; }
           impact: {
             deltaMean: item.impact.deltaMean,
             deltaStandardDeviation: item.impact.deltaStandardDeviation
-          }
+          },
+          ...item.premiseState === void 0 ? {} : { premiseState: item.premiseState }
         };
         if (item.relayContributionIds) copy.relayContributionIds = [...item.relayContributionIds];
         return copy;
@@ -4448,7 +5375,8 @@ button.is-danger { color: #8b2635; }
     premiseTitle,
     premiseDescription,
     premisePrior = DEFAULT_CLAIM_PRIOR,
-    impact
+    impact,
+    premiseState = "true"
   }) {
     const inquiry3 = session.inquiry;
     const targetClaimId = session.focusClaimId;
@@ -4474,7 +5402,8 @@ button.is-danger { color: #8b2635; }
       contributionId,
       premiseClaimId: resolvedPremiseClaimId,
       targetClaimId,
-      impact: { ...impact }
+      impact: { ...impact },
+      premiseState
     };
     inquiry3.evidence.push(evidence2);
     session.initialValues.deltaMeansByEvidenceId[evidence2.id] = evidence2.impact.deltaMean;
@@ -4487,7 +5416,8 @@ button.is-danger { color: #8b2635; }
   }
   function editInquiryEvidence(session, evidenceId, {
     contribution,
-    impact
+    impact,
+    premiseState
   }) {
     const inquiry3 = session.inquiry;
     const item = findEvidence(inquiry3, evidenceId);
@@ -4501,6 +5431,7 @@ button.is-danger { color: #8b2635; }
       else delete source.locator;
     }
     if (impact !== void 0) item.impact = { ...impact };
+    if (premiseState !== void 0) item.premiseState = premiseState;
     return item;
   }
   function reachableClaims(inquiry3) {
@@ -4627,6 +5558,13 @@ button.is-danger { color: #8b2635; }
       const sourceTitle = textField(messages.sourceReference, "sourceTitle", { required: true });
       const sourceUrl = textField(messages.sourceUrl, "sourceUrl", { type: "url", required: true });
       const sourceLocator = textField(messages.sourceLocator, "sourceLocator");
+      const stateChoice = createPremiseConditionControl({
+        label: messages.premiseCondition,
+        trueLabel: messages.premiseTrue,
+        falseLabel: messages.premiseFalse,
+        changeToTrue: messages.changeToTrue,
+        changeToFalse: messages.changeToFalse
+      });
       const conditionalControl = createConditionalStrengthControl({
         messages: conditionalMessages,
         formatMessage: formatMessage2,
@@ -4649,7 +5587,8 @@ button.is-danger { color: #8b2635; }
         reuse
       ]);
       const effectSection = element("section", { className: "inquiry-add-section inquiry-add-effect" }, [
-        element("h3", { textContent: conditionalMessages.ifThisWereTrue }),
+        element("h3", { textContent: messages.premiseCondition }),
+        stateChoice.element,
         conditionalControl.element
       ]);
       const sourceSection = element("section", { className: "inquiry-add-section inquiry-add-source" }, [
@@ -4671,7 +5610,8 @@ button.is-danger { color: #8b2635; }
           premiseClaimId: premiseSelect.value || void 0,
           premiseTitle: premiseTitle.input.value,
           premiseDescription: premiseDescription.input.value,
-          impact: { deltaMean: conditionalControl.value(), deltaStandardDeviation: 0 }
+          impact: { deltaMean: conditionalControl.value(), deltaStandardDeviation: 0 },
+          premiseState: stateChoice.value()
         });
         return commitCandidate(candidate, premiseSelect);
       });
@@ -4715,10 +5655,25 @@ button.is-danger { color: #8b2635; }
       const item = session.inquiry.evidence.find(({ id }) => id === evidenceId);
       if (!item) throw new Error(`Unknown evidence: ${evidenceId}`);
       const source = contributionById2(session.inquiry, item.contributionId);
-      showDialog(messages.editDetails, messages.save, sourceForm(source), () => {
+      const stateChoice = createPremiseConditionControl({
+        label: messages.premiseCondition,
+        initialState: item.premiseState ?? "true",
+        trueLabel: messages.premiseTrue,
+        falseLabel: messages.premiseFalse,
+        changeToTrue: messages.changeToTrue,
+        changeToFalse: messages.changeToFalse
+      });
+      const condition = element("section", { className: "inquiry-add-section inquiry-add-effect" }, [
+        element("h3", { textContent: messages.premiseCondition }),
+        stateChoice.element
+      ]);
+      showDialog(messages.editDetails, messages.save, [...sourceForm(source), condition], () => {
         if (!validateSource(dialogForm) || !validateTrimmed(formInput(dialogForm, "sourceTitle"))) return false;
         const candidate = candidateSession();
-        editInquiryEvidence(candidate, evidenceId, { contribution: sourceFromForm(dialogForm) });
+        editInquiryEvidence(candidate, evidenceId, {
+          contribution: sourceFromForm(dialogForm),
+          premiseState: stateChoice.value()
+        });
         return commitCandidate(candidate, formInput(dialogForm, "sourceTitle"));
       });
     }
@@ -5124,91 +6079,6 @@ button.is-danger { color: #8b2635; }
     return cloneInquiry(locale === "fr" ? localizeNuclear(preset.inquiry) : preset.inquiry);
   }
 
-  // demo/src/diagram/evidence-summary.ts
-  function summarizeCollapsedEvidence(weights, displayExtent) {
-    if (!Number.isFinite(displayExtent) || displayExtent <= 0) {
-      throw new RangeError("The collapsed evidence display extent must be a finite positive number.");
-    }
-    const contributions = [...weights].map((weightDecibans) => ({ weightDecibans }));
-    const aggregate = aggregateEvidence(contributions);
-    let supportDecibans = 0;
-    let oppositionDecibans = 0;
-    for (const { weightDecibans } of contributions) {
-      if (weightDecibans > 0) supportDecibans += weightDecibans;
-      if (weightDecibans < 0) oppositionDecibans -= weightDecibans;
-    }
-    return {
-      ...aggregate,
-      supportDecibans,
-      oppositionDecibans,
-      supportPercent: Math.min(100, supportDecibans / displayExtent * 100),
-      oppositionPercent: Math.min(100, oppositionDecibans / displayExtent * 100)
-    };
-  }
-  function appendText(parent, className, value) {
-    const node = document.createElement("span");
-    node.className = className;
-    node.textContent = value;
-    parent.append(node);
-    return node;
-  }
-  function accumulatedArrow(direction, percent) {
-    const arrow = document.createElement("span");
-    arrow.className = `collapsed-evidence-summary-arrow is-${direction}`;
-    arrow.hidden = percent === 0;
-    const body = document.createElement("span");
-    body.className = "collapsed-evidence-summary-arrow-body";
-    const tip = document.createElement("span");
-    tip.className = "collapsed-evidence-summary-arrow-tip";
-    arrow.append(...direction === "opposition" ? [tip, body] : [body, tip]);
-    return arrow;
-  }
-  function renderCollapsedEvidenceSummary({
-    weights,
-    displayExtent,
-    formatWeight = (value) => String(value),
-    oppositionLabel = "Opposition",
-    supportLabel = "Support",
-    dissonanceLabel = "Dissonance",
-    formatDissonance: formatDissonance2 = (value) => String(value),
-    ariaLabel
-  } = {}) {
-    if (displayExtent === void 0) {
-      throw new TypeError("The collapsed evidence display extent is required.");
-    }
-    const summary = summarizeCollapsedEvidence(weights ?? [], displayExtent);
-    const root = document.createElement("span");
-    root.className = "collapsed-evidence-summary";
-    root.setAttribute("role", "img");
-    root.setAttribute("aria-label", ariaLabel ?? `${oppositionLabel}: ${formatWeight(summary.oppositionDecibans)}. ${dissonanceLabel}: ${formatDissonance2(summary.dissonance)}. ${supportLabel}: ${formatWeight(summary.supportDecibans)}.`);
-    root.style.setProperty("--collapsed-opposition", `${summary.oppositionPercent}%`);
-    root.style.setProperty("--collapsed-support", `${summary.supportPercent}%`);
-    const opposition = document.createElement("span");
-    opposition.className = "collapsed-evidence-summary-total is-opposition";
-    appendText(opposition, "collapsed-evidence-summary-label", oppositionLabel);
-    appendText(opposition, "collapsed-evidence-summary-value", formatWeight(summary.oppositionDecibans));
-    const dissonance = document.createElement("span");
-    dissonance.className = `collapsed-evidence-summary-total is-dissonance${summary.dissonance === 0 ? " is-zero" : ""}`;
-    appendText(dissonance, "collapsed-evidence-summary-label", dissonanceLabel);
-    appendText(dissonance, "collapsed-evidence-summary-value", formatDissonance2(summary.dissonance));
-    const support = document.createElement("span");
-    support.className = "collapsed-evidence-summary-total is-support";
-    appendText(support, "collapsed-evidence-summary-label", supportLabel);
-    appendText(support, "collapsed-evidence-summary-value", formatWeight(summary.supportDecibans));
-    const line = document.createElement("span");
-    line.className = "collapsed-evidence-summary-line";
-    line.setAttribute("aria-hidden", "true");
-    line.append(
-      accumulatedArrow("opposition", summary.oppositionPercent),
-      accumulatedArrow("support", summary.supportPercent),
-      Object.assign(document.createElement("i"), {
-        className: "collapsed-evidence-summary-center"
-      })
-    );
-    root.append(opposition, dissonance, line, support);
-    return root;
-  }
-
   // demo/src/diagram/arrow-geometry.ts
   function diagonalArrowPoints(segment, side, selected = false) {
     const dx = segment.x2 - segment.x1;
@@ -5265,9 +6135,9 @@ button.is-danger { color: #8b2635; }
   }
 
   // demo/src/diagram/renderer.ts
-  var SVG_NAMESPACE2 = "http://www.w3.org/2000/svg";
-  function svgElement2(tag, attributes = {}) {
-    const node = document.createElementNS(SVG_NAMESPACE2, tag);
+  var SVG_NAMESPACE3 = "http://www.w3.org/2000/svg";
+  function svgElement3(tag, attributes = {}) {
+    const node = document.createElementNS(SVG_NAMESPACE3, tag);
     for (const [key, value] of Object.entries(attributes)) {
       if (value !== void 0) node.setAttribute(key, String(value));
     }
@@ -5383,7 +6253,7 @@ button.is-danger { color: #8b2635; }
     }
     const height = Math.max(18, yPositions.at(-1) + top);
     const x = (percentage) => percentage / 100 * width;
-    const svg = svgElement2("svg", {
+    const svg = svgElement3("svg", {
       viewBox: `0 0 ${width} ${height}`,
       preserveAspectRatio: "none",
       role: "img",
@@ -5406,17 +6276,17 @@ button.is-danger { color: #8b2635; }
         step.after,
         saturationThresholdDecibans
       );
-      const group = svgElement2("g", {
+      const group = svgElement3("g", {
         class: `inquiry-flow-evidence is-${tone}`,
         "data-evidence-id": step.evidenceId
       });
       svg.append(group);
-      group.append(svgElement2("rect", {
+      group.append(svgElement3("rect", {
         class: `inquiry-flow-step is-${tone}`,
         "aria-hidden": "true",
         ...inquiryStepBox(width, yAfter, yBefore)
       }));
-      group.append(svgElement2("polygon", {
+      group.append(svgElement3("polygon", {
         class: `inquiry-flow-palette is-${tone}`,
         points: pointsAttribute(inquiryStepBandPoints(
           before,
@@ -5440,7 +6310,7 @@ button.is-danger { color: #8b2635; }
           y2: yTransition,
           trueEnd: true
         }, side === "minimum" ? "maximum" : "minimum");
-        if (points) group.append(svgElement2("polygon", {
+        if (points) group.append(svgElement3("polygon", {
           class: `inquiry-flow-arrow is-${tone}`,
           points: pointsAttribute(points),
           style: `fill: ${effectColor}`
@@ -5451,7 +6321,7 @@ button.is-danger { color: #8b2635; }
         [x(after.left + after.width), x(after.left + after.width)]
       ];
       for (const [x1, x2] of connectors) {
-        group.append(svgElement2("line", {
+        group.append(svgElement3("line", {
           class: "inquiry-flow-connector",
           x1,
           x2,
@@ -5463,7 +6333,7 @@ button.is-danger { color: #8b2635; }
       if (label) {
         const labelHeight = inquiryLabelHeight(label, viewportWidth);
         const layout = stepLayouts[visualIndex];
-        const foreignObject = svgElement2("foreignObject", {
+        const foreignObject = svgElement3("foreignObject", {
           class: "inquiry-flow-label",
           x: 0,
           y: yAfter + layout.labelOffset,
@@ -5489,7 +6359,7 @@ button.is-danger { color: #8b2635; }
     });
     trajectoryPositions.forEach((band3, index) => {
       const y = bandY[index] ?? top;
-      svg.append(svgElement2("line", {
+      svg.append(svgElement3("line", {
         class: `inquiry-flow-band${index === 0 ? " is-prior" : ""}`,
         x1: x(band3.left),
         x2: x(band3.left + band3.width),
@@ -5497,7 +6367,7 @@ button.is-danger { color: #8b2635; }
         y2: y
       }));
       if (band3.width === 0) {
-        svg.append(svgElement2("circle", {
+        svg.append(svgElement3("circle", {
           class: "inquiry-flow-point",
           cx: x(band3.center ?? band3.left),
           cy: y,
@@ -5513,11 +6383,11 @@ button.is-danger { color: #8b2635; }
     const tone = inquiryStepTone(evaluation.prior, evaluation.posterior);
     const meanShift = evaluation.posterior.mean - evaluation.prior.mean;
     if (Math.abs(meanShift) > 1e-12) {
-      const endpoint = meanShift > 0 ? "lower" : "upper";
-      return [{ start: beforeBand[endpoint], end: afterBand[endpoint], tone }];
+      const endpoint2 = meanShift > 0 ? "lower" : "upper";
+      return [{ start: beforeBand[endpoint2], end: afterBand[endpoint2], tone }];
     }
     const endpoints = ["lower", "upper"];
-    return endpoints.map((endpoint) => ({ start: beforeBand[endpoint], end: afterBand[endpoint], tone })).filter(({ start, end }) => Math.abs(end - start) > 1e-12);
+    return endpoints.map((endpoint2) => ({ start: beforeBand[endpoint2], end: afterBand[endpoint2], tone })).filter(({ start, end }) => Math.abs(end - start) > 1e-12);
   }
   function uniqueConnectionSegments(segments) {
     const seen = /* @__PURE__ */ new Set();
@@ -5581,20 +6451,20 @@ button.is-danger { color: #8b2635; }
     };
   }
   function renderInquiryConnections(connectionGeometry, width, height) {
-    const svg = svgElement2("svg", {
+    const svg = svgElement3("svg", {
       class: "inquiry-diagram-connections",
       viewBox: `0 0 ${width} ${height}`,
       preserveAspectRatio: "none",
       "aria-hidden": "true"
     });
     for (const segment of connectionGeometry.boundaries) {
-      svg.append(svgElement2("line", {
+      svg.append(svgElement3("line", {
         class: "inquiry-diagram-connection",
         ...segment
       }));
     }
     for (const segment of connectionGeometry.guides) {
-      svg.append(svgElement2("line", {
+      svg.append(svgElement3("line", {
         class: "inquiry-diagram-connection is-resultant-guide",
         ...segment
       }));
@@ -5603,7 +6473,7 @@ button.is-danger { color: #8b2635; }
   }
   function renderInquiryResultant(evaluation, geometry, viewportWidth, resultantColor) {
     const height = 18;
-    const svg = svgElement2("svg", {
+    const svg = svgElement3("svg", {
       class: "inquiry-resultant-arrow",
       viewBox: `0 0 ${viewportWidth} ${height}`,
       preserveAspectRatio: "none",
@@ -5622,7 +6492,7 @@ button.is-danger { color: #8b2635; }
       const length = Math.abs(end - start);
       const head = Math.min(18, length, Math.max(5, length * 0.55));
       const lineEnd = arrowheadVisible ? end - direction * head * 0.82 : end;
-      const line = svgElement2("line", {
+      const line = svgElement3("line", {
         class: `inquiry-resultant-line is-${segment.tone}`,
         x1: start,
         y1: height / 2,
@@ -5632,7 +6502,7 @@ button.is-danger { color: #8b2635; }
       line.style.stroke = resultantColor;
       svg.append(line);
       if (arrowheadVisible) {
-        const headShape = svgElement2("polygon", {
+        const headShape = svgElement3("polygon", {
           class: `inquiry-resultant-head is-${segment.tone}`,
           points: `${end},${height / 2} ${end - direction * head},${height / 2 - head / 2} ${end - direction * head},${height / 2 + head / 2}`
         });
@@ -5642,208 +6512,6 @@ button.is-danger { color: #8b2635; }
       }
     }
     return svg;
-  }
-
-  // demo/src/diagram/credibility-axis.ts
-  function formatAxisProbability(decibans, formatPercent) {
-    const display = formatProbabilityDisplay(decibans, "exact");
-    if (Math.abs(display.value - 50) < 0.05) {
-      return formatPercent(0.5, { maximumFractionDigits: 0 });
-    }
-    const percentage = formatPercent(display.value / 100, { maximumFractionDigits: 12 });
-    return `${display.operator ?? "~"} ${percentage}`;
-  }
-  function formatBandEndpoint(decibans, direction, formatPercent) {
-    const display = formatProbabilityDisplay(decibans, direction);
-    const percentage = formatPercent(display.value / 100, { maximumFractionDigits: 12 });
-    return display.operator === void 0 ? percentage : `${display.operator} ${percentage}`;
-  }
-  function renderBandValue(band3, saturationThresholdDecibans, formatPercent) {
-    const exact = band3.lower === band3.upper;
-    const value = element("span", {
-      className: `inquiry-flow-axis-value${exact ? " is-exact" : ""}`
-    });
-    const lower = element("span", {
-      className: "inquiry-flow-axis-endpoint is-lower",
-      textContent: formatBandEndpoint(band3.lower, exact ? "exact" : "lower", formatPercent)
-    });
-    lower.style.color = credibilityAxisColor(band3.lower, { saturationThresholdDecibans });
-    if (exact) {
-      value.append(lower);
-      return value;
-    }
-    const upper = element("span", {
-      className: "inquiry-flow-axis-endpoint is-upper",
-      textContent: formatBandEndpoint(band3.upper, "upper", formatPercent)
-    });
-    upper.style.color = credibilityAxisColor(band3.upper, { saturationThresholdDecibans });
-    value.append(lower, element("span", {
-      className: "inquiry-flow-axis-separator",
-      textContent: "–"
-    }), upper);
-    return value;
-  }
-  function placeEndpointHandle(handle, bound, percent) {
-    const inward = bound === "lower" && percent <= 12 || bound === "upper" && percent >= 88;
-    handle.classList.toggle("is-inward", inward);
-    handle.style.left = `${percent}%`;
-    handle.style.setProperty("--prior-anchor", inward === (bound === "lower") ? "0%" : "100%");
-  }
-  function renderCredibilityAxis(options) {
-    const {
-      label,
-      band: band3,
-      position,
-      domain,
-      className,
-      saturationThresholdDecibans,
-      plotWidth,
-      messages,
-      formatPercent,
-      editable = false,
-      background,
-      overlay,
-      resetVisible = false,
-      onReset,
-      onEditEndpoint
-    } = options;
-    const current = className.split(" ").includes("is-current");
-    const track = element("div", {
-      className: `inquiry-flow-axis-track${current ? " posterior-track" : ""}`,
-      "aria-hidden": "true"
-    });
-    const shape = element("span", {
-      className: `inquiry-flow-axis-band${current ? " posterior-band" : ""} ${className}`
-    });
-    shape.style.left = `${position.left}%`;
-    shape.style.width = `${Math.max(position.width, 0.3)}%`;
-    if (background) shape.style.background = background;
-    if (current) {
-      const visible = band3.upper >= domain.minimum && band3.lower <= domain.maximum;
-      const exact = band3.lower === band3.upper;
-      shape.hidden = !visible || exact;
-      track.classList.toggle("is-exact", exact && visible);
-      track.classList.toggle("is-clipped-minimum", position.clippedMinimum);
-      track.classList.toggle("is-clipped-maximum", position.clippedMaximum);
-      track.style.setProperty("--posterior-x", `${position.center}%`);
-      track.style.setProperty("--posterior-minimum-color", credibilityAxisColor(
-        band3.lower,
-        { saturationThresholdDecibans }
-      ));
-      track.style.setProperty("--posterior-maximum-color", credibilityAxisColor(
-        band3.upper,
-        { saturationThresholdDecibans }
-      ));
-    }
-    track.append(shape);
-    if (overlay) track.append(overlay);
-    if (position.clippedMinimum) {
-      track.append(element("span", {
-        className: "inquiry-flow-clipped is-minimum",
-        "aria-hidden": "true",
-        textContent: "←"
-      }));
-    }
-    if (position.clippedMaximum) {
-      track.append(element("span", {
-        className: "inquiry-flow-clipped is-maximum",
-        "aria-hidden": "true",
-        textContent: "→"
-      }));
-    }
-    if (editable) {
-      track.classList.add("prior-track");
-      track.removeAttribute("aria-hidden");
-      const toPercent = (value) => Math.max(0, Math.min(
-        100,
-        (value - domain.minimum) / (domain.maximum - domain.minimum) * 100
-      ));
-      const exact = band3.lower === band3.upper;
-      track.classList.toggle("is-exact", exact);
-      track.style.setProperty("--caret-x", `${toPercent(band3.lower)}%`);
-      track.style.setProperty("--prior-color", credibilityAxisColor(
-        band3.lower,
-        { saturationThresholdDecibans }
-      ));
-      const handles = ["lower", "upper"].map((bound) => {
-        const value = band3[bound];
-        const handle = element("button", {
-          type: "button",
-          className: `prior-handle inquiry-prior-handle prior-handle-${bound === "lower" ? "min" : "max"} is-${bound}`,
-          dataset: { priorBound: bound },
-          role: "slider",
-          "aria-label": bound === "lower" ? messages.priorLowerHandle : messages.priorUpperHandle,
-          "aria-valuemin": domain.minimum,
-          "aria-valuemax": domain.maximum,
-          "aria-valuenow": Math.max(domain.minimum, Math.min(domain.maximum, value)),
-          "aria-valuetext": formatAxisProbability(value, formatPercent)
-        });
-        placeEndpointHandle(handle, bound, toPercent(value));
-        handle.style.setProperty("--prior-color", credibilityAxisColor(
-          value,
-          { saturationThresholdDecibans }
-        ));
-        handle.addEventListener("keydown", (event) => {
-          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-          event.preventDefault();
-          const step = event.shiftKey ? 5 : 1;
-          const currentValue = Number(handle.getAttribute("aria-valuenow"));
-          const next = event.key === "Home" ? domain.minimum : event.key === "End" ? domain.maximum : currentValue + (event.key === "ArrowRight" ? step : -step);
-          onEditEndpoint?.(bound, next, domain, true);
-        });
-        return handle;
-      });
-      track.append(...handles);
-    }
-    const ruler = element("div", { className: "inquiry-flow-ruler", "aria-hidden": "true" });
-    const firstTick = Math.ceil(domain.minimum / 5) * 5;
-    const values = /* @__PURE__ */ new Set([domain.minimum, domain.maximum, 0]);
-    for (let value = firstTick; value <= domain.maximum; value += 5) values.add(value);
-    const tickValues = [...values].filter((value) => value >= domain.minimum && value <= domain.maximum).sort((left, right) => left - right);
-    const width = plotWidth || 600;
-    const labels = /* @__PURE__ */ new Map();
-    const placements = [];
-    const priority = [0, domain.minimum, domain.maximum, ...tickValues].filter((value, index, all) => all.indexOf(value) === index);
-    for (const value of priority) {
-      const text = formatAxisProbability(value, formatPercent);
-      const estimatedWidth = Math.max(22, text.length * 6.8);
-      const center = (value - domain.minimum) / (domain.maximum - domain.minimum) * width;
-      const left = Math.max(1, Math.min(width - estimatedWidth - 1, center - estimatedWidth / 2));
-      const right = left + estimatedWidth;
-      if (placements.some(([start, end]) => left <= end + 5 && right >= start - 5)) continue;
-      placements.push([left, right]);
-      labels.set(value, text);
-    }
-    for (const value of tickValues) {
-      const text = labels.get(value) ?? "";
-      const tick = element("span", {
-        className: [
-          text ? "" : "is-unlabelled",
-          value === domain.minimum ? "is-first" : "",
-          value === domain.maximum ? "is-last" : ""
-        ].filter(Boolean).join(" "),
-        textContent: text
-      });
-      tick.style.left = `${(value - domain.minimum) / (domain.maximum - domain.minimum) * 100}%`;
-      ruler.append(tick);
-    }
-    const reset = editable && resetVisible ? element("button", {
-      type: "button",
-      className: "inquiry-prior-reset",
-      "aria-label": messages.resetPrior,
-      title: messages.resetPrior,
-      textContent: "↺"
-    }) : void 0;
-    if (onReset) reset?.addEventListener("click", onReset);
-    return element("div", {
-      className: `inquiry-flow-axis ${className}${reset ? " has-prior-reset" : ""}`
-    }, [
-      element("strong", { textContent: label }),
-      renderBandValue(band3, saturationThresholdDecibans, formatPercent),
-      ruler,
-      track,
-      reset
-    ]);
   }
 
   // demo/src/inquiry/claim-diagram.ts
@@ -5975,14 +6643,18 @@ button.is-danger { color: #8b2635; }
     })));
     const resultantArrow = renderInquiryResultant(evaluated, geometry, plotWidth, resultantColor);
     const summary = renderCollapsedEvidenceSummary({
-      weights: evaluated.steps.map((step) => step.after.mean - step.before.mean),
-      displayExtent: 2 * saturationThresholdDecibans,
-      formatWeight: (value) => formatJeffreysStrength(presentationI18n, value),
+      meanChanges: evaluated.steps.map((step) => step.after.mean - step.before.mean),
+      extentDecibans: 2 * saturationThresholdDecibans,
+      formatWeight: (value) => `${formatJeffreysStrength(presentationI18n, value)} (${presentationI18n.number(value, { maximumFractionDigits: 1 })} dBan)`,
       oppositionLabel: palette3.against,
       supportLabel: palette3.for,
-      dissonanceLabel,
-      formatDissonance: (value) => formatDissonance(presentationI18n, value),
-      ariaLabel: `${palette3.against}: ${presentationI18n.number((meanSummary.absoluteWeightDecibans - meanSummary.netWeightDecibans) / 2, { maximumFractionDigits: 0 })}. ${dissonanceLabel}: ${formatDissonance(presentationI18n, meanSummary.dissonance)}. ${palette3.for}: ${presentationI18n.number((meanSummary.absoluteWeightDecibans + meanSummary.netWeightDecibans) / 2, { maximumFractionDigits: 0 })}.`
+      formatDirectionalLabel: (direction, count) => `${direction} (${presentationI18n.number(count)})`,
+      middleMetric: {
+        label: dissonanceLabel,
+        value: formatDissonance(presentationI18n, meanSummary.dissonance),
+        zero: meanSummary.dissonance === 0
+      },
+      ariaLabel: `${palette3.against}: ${presentationI18n.number((meanSummary.absoluteWeightDecibans - meanSummary.netWeightDecibans) / 2, { maximumFractionDigits: 1 })} dBan. ${dissonanceLabel}: ${formatDissonance(presentationI18n, meanSummary.dissonance)}. ${palette3.for}: ${presentationI18n.number((meanSummary.absoluteWeightDecibans + meanSummary.netWeightDecibans) / 2, { maximumFractionDigits: 1 })} dBan.`
     });
     const trailToggle = element("button", {
       type: "button",
@@ -6423,7 +7095,12 @@ button.is-danger { color: #8b2635; }
       if (next === drag.lastValue) return;
       drag.moved = true;
       drag.lastValue = next;
-      commitEndpoint(drag.bound, next, drag);
+      commitEndpoint({
+        bound: drag.bound,
+        value: next,
+        domain: { minimum: drag.minimum, maximum: drag.maximum },
+        restoreFocus: false
+      });
       event.preventDefault();
     };
     const pointerUp = (event) => {
@@ -6609,6 +7286,15 @@ button.is-danger { color: #8b2635; }
           if (!commitCandidate(candidate)) return void 0;
           render();
           return panelState(evidenceId);
+        },
+        onPremiseStateChange({ evidenceId, premiseState }) {
+          const candidate = candidateSession();
+          const item = candidate.inquiry.evidence.find(({ id }) => id === evidenceId);
+          if (!item) return void 0;
+          editInquiryEvidence(candidate, evidenceId, { premiseState });
+          if (!commitCandidate(candidate)) return void 0;
+          render();
+          return panelState(evidenceId);
         }
       }
     });
@@ -6616,14 +7302,19 @@ button.is-danger { color: #8b2635; }
       selectedEvidenceId = evidenceId;
       evidencePanel.open(panelState(evidenceId));
     }
-    function commitPriorEndpoint(bound, value, geometry, restoreFocus = false) {
+    function commitPriorEndpoint({
+      bound,
+      value,
+      domain,
+      restoreFocus
+    }) {
       const claim2 = claimById2(session.inquiry, session.focusClaimId);
       const band3 = editBandEndpoint(
         gaussianToBand(claim2.prior),
         bound,
         value,
-        geometry.minimum,
-        geometry.maximum
+        domain.minimum,
+        domain.maximum
       );
       const candidate = candidateSession();
       editInquiryClaim(candidate, claim2.id, { prior: bandToGaussian(band3) });
@@ -6778,6 +7469,7 @@ button.is-danger { color: #8b2635; }
     }
     resetActiveRoot();
     sessionNotice.showModal();
+    requiredElement("#inquiry-session-notice-acknowledge").focus();
     return {
       setLocale() {
         const previousPreset = createInquiryPreset(ACTIVE_PRESET_ID, renderedLocale);
@@ -6806,13 +7498,13 @@ button.is-danger { color: #8b2635; }
     for (const selector of ["#meta-description", "#og-description", "#twitter-description"]) {
       document.querySelector(selector)?.setAttribute("content", description);
     }
-    for (const element2 of document.querySelectorAll("[data-i18n]")) {
-      const key = element2.dataset.i18n;
-      if (key) element2.textContent = messageAtPath(i18n.messages, key) ?? key;
+    for (const element3 of document.querySelectorAll("[data-i18n]")) {
+      const key = element3.dataset.i18n;
+      if (key) element3.textContent = messageAtPath(i18n.messages, key) ?? key;
     }
-    for (const element2 of document.querySelectorAll("[data-i18n-aria-label]")) {
-      const key = element2.dataset.i18nAriaLabel;
-      if (key) element2.setAttribute("aria-label", messageAtPath(i18n.messages, key) ?? key);
+    for (const element3 of document.querySelectorAll("[data-i18n-aria-label]")) {
+      const key = element3.dataset.i18nAriaLabel;
+      if (key) element3.setAttribute("aria-label", messageAtPath(i18n.messages, key) ?? key);
     }
   }
   function applyLocale() {

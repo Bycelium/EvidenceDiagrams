@@ -5,7 +5,6 @@ import type { ClaimCardMessages } from '../components/claim-card.ts';
 import type { ConditionalMessages } from '../components/conditional-strength-control.ts';
 import type { EvidenceDetailMessages } from '../components/evidence-panel.ts';
 import type { FormMessages } from '../components/inquiry-forms.ts';
-import type { MeasureMessages } from '../diagram/evidence-summary.ts';
 import type { PaletteMessages } from '../diagram/color-legend.ts';
 import type { BandMessages, StrengthMessages } from '../presentation.ts';
 import type { ClaimDiagramMessages } from '../inquiry/claim-diagram.ts';
@@ -22,6 +21,10 @@ export interface InquiryMessages {
   readonly detail: EvidenceDetailMessages;
   readonly conditional: ConditionalMessages;
   readonly form: FormMessages;
+}
+
+export interface MeasureMessages {
+  readonly dissonance: string;
 }
 
 export type LocaleMessages = {

@@ -1,67 +1,29 @@
 {
-  "name": "@bycelium/evidence-diagrams",
-  "version": "1.1.1",
-  "description": "Evidence weighting, credence, color, and Inquiry graph calculations in decibans.",
-  "type": "module",
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Bycelium/EvidenceDiagrams.git"
-  },
-  "homepage": "https://github.com/Bycelium/EvidenceDiagrams#readme",
-  "bugs": {
-    "url": "https://github.com/Bycelium/EvidenceDiagrams/issues"
-  },
-  "keywords": [
-    "evidence",
-    "probability",
-    "bayes",
-    "deciban",
-    "visualization"
-  ],
+  "name": "evidence-diagrams-workspace",
+  "private": true,
   "packageManager": "pnpm@10.20.0",
   "engines": {
     "node": ">=24.3.0"
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
-    "./propagation-math": {
-      "types": "./dist/propagation-math/index.d.ts",
-      "import": "./dist/propagation-math/index.js",
-      "default": "./dist/propagation-math/index.js"
-    }
-  },
-  "files": [
-    "dist",
-    "NOTICE"
-  ],
-  "sideEffects": false,
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "scripts": {
-    "build": "node scripts/build.mjs",
+    "build": "pnpm run build:core && pnpm run build:dom",
+    "build:core": "pnpm --filter @bycelium/evidence-diagrams build",
+    "build:dom": "pnpm --filter @bycelium/evidence-diagrams-dom build",
     "build:demo-assets": "node scripts/render-demo-assets.mjs",
     "check:demo-assets": "node scripts/render-demo-assets.mjs --check",
     "build:demo": "pnpm run build && pnpm --filter @bycelium/evidence-diagrams-demo build",
     "check:demo": "pnpm run build && pnpm --filter @bycelium/evidence-diagrams-demo check",
-    "test": "pnpm run build && pnpm --filter @bycelium/propagation-math test && pnpm --filter @bycelium/evidence-diagrams-demo test && node --test src/**/*.test.ts",
-    "typecheck": "pnpm run build && pnpm --filter @bycelium/propagation-math typecheck && tsc --noEmit && pnpm run check:demo",
+    "screenshots": "pnpm build:demo && node scripts/capture-guide-media.mjs --readme-media --output-dir .",
+    "test": "pnpm run build && pnpm --filter @bycelium/propagation-math test && pnpm --filter @bycelium/evidence-diagrams test && pnpm --filter @bycelium/evidence-diagrams-dom test && pnpm --filter @bycelium/evidence-diagrams-demo test && node --test scripts/*.test.mjs",
+    "typecheck": "pnpm run build && pnpm --filter @bycelium/propagation-math typecheck && pnpm --filter @bycelium/evidence-diagrams-dom typecheck && pnpm --filter @bycelium/evidence-diagrams typecheck && pnpm run check:demo",
     "test:package": "pnpm run build && node scripts/test-package.mjs",
-    "check": "pnpm run test && pnpm run typecheck && pnpm run test:package",
-    "prepare": "npm run build",
-    "prepack": "npm run build"
+    "test:dom-package": "pnpm run build && node scripts/test-dom-package.mjs",
+    "check": "pnpm run test && pnpm run typecheck && pnpm run test:package && pnpm run test:dom-package"
   },
   "devDependencies": {
     "@types/node": "^24.7.0",
     "esbuild": "^0.28.2",
+    "playwright": "1.63.0",
     "typescript": "^5.9.3"
   }
 }

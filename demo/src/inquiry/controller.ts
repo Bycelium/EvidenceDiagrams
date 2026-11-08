@@ -9,7 +9,7 @@ import { createInquiryEvidencePanel } from '../components/evidence-panel.ts';
 import { createFormDialog } from '../components/form-dialog.ts';
 import { createInquiryForms } from '../components/inquiry-forms.ts';
 import { editBandEndpoint, type InquiryBandGeometry } from '../diagram/geometry.ts';
-import type { PriorBound } from '../diagram/credibility-axis.ts';
+import type { PriorBound } from '@bycelium/evidence-diagrams-dom';
 import type { I18n, LocaleId } from '../i18n/index.ts';
 import { createInquiryPreset } from '../presets/index.ts';
 import {
@@ -188,6 +188,15 @@ export function mountInquiryController(i18n: I18n): { setLocale(): void } {
       render();
       return panelState(evidenceId);
     },
+    onPremiseStateChange({ evidenceId, premiseState }) {
+      const candidate = candidateSession();
+      const item = candidate.inquiry.evidence.find(({ id }) => id === evidenceId);
+      if (!item) return undefined;
+      editInquiryEvidence(candidate, evidenceId, { premiseState });
+      if (!commitCandidate(candidate)) return undefined;
+      render();
+      return panelState(evidenceId);
+    },
     },
   });
 
@@ -196,19 +205,24 @@ export function mountInquiryController(i18n: I18n): { setLocale(): void } {
     evidencePanel.open(panelState(evidenceId));
   }
 
-  function commitPriorEndpoint(
-    bound: PriorBound,
-    value: number,
-    geometry: Pick<InquiryBandGeometry, 'minimum' | 'maximum'>,
-    restoreFocus = false,
-  ): void {
+  function commitPriorEndpoint({
+    bound,
+    value,
+    domain,
+    restoreFocus,
+  }: {
+    readonly bound: PriorBound;
+    readonly value: number;
+    readonly domain: Pick<InquiryBandGeometry, 'minimum' | 'maximum'>;
+    readonly restoreFocus: boolean;
+  }): void {
     const claim = claimById(session.inquiry, session.focusClaimId);
     const band = editBandEndpoint(
       gaussianToBand(claim.prior),
       bound,
       value,
-      geometry.minimum,
-      geometry.maximum,
+      domain.minimum,
+      domain.maximum,
     );
     const candidate = candidateSession();
     editInquiryClaim(candidate, claim.id, { prior: bandToGaussian(band) });
@@ -377,6 +391,7 @@ export function mountInquiryController(i18n: I18n): { setLocale(): void } {
 
   resetActiveRoot();
   sessionNotice.showModal();
+  requiredElement<HTMLInputElement>('#inquiry-session-notice-acknowledge').focus();
   return {
     setLocale() {
       const previousPreset = createInquiryPreset(ACTIVE_PRESET_ID, renderedLocale);

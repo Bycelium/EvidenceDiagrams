@@ -1,5 +1,5 @@
 import { gaussianToBand, type Gaussian } from '@bycelium/evidence-diagrams/propagation-math';
-import type { PriorBound } from '../diagram/credibility-axis.ts';
+import type { PriorBound } from '@bycelium/evidence-diagrams-dom';
 import type { InquirySession } from '../state.ts';
 import { claimById } from './lookups.ts';
 
@@ -21,11 +21,12 @@ type PriorDragOptions = {
   focus: HTMLElement;
   getSession: () => InquirySession;
   restorePrior: (claimId: string, prior: Gaussian) => void;
-  commitEndpoint: (
-    bound: PriorBound,
-    value: number,
-    domain: { minimum: number; maximum: number },
-  ) => void;
+  commitEndpoint: (input: {
+    readonly bound: PriorBound;
+    readonly value: number;
+    readonly domain: { readonly minimum: number; readonly maximum: number };
+    readonly restoreFocus: boolean;
+  }) => void;
 };
 
 export function installPriorDrag(options: PriorDragOptions): void {
@@ -76,7 +77,12 @@ export function installPriorDrag(options: PriorDragOptions): void {
     if (next === drag.lastValue) return;
     drag.moved = true;
     drag.lastValue = next;
-    commitEndpoint(drag.bound, next, drag);
+    commitEndpoint({
+      bound: drag.bound,
+      value: next,
+      domain: { minimum: drag.minimum, maximum: drag.maximum },
+      restoreFocus: false,
+    });
     event.preventDefault();
   };
 
